@@ -131,7 +131,7 @@ def main():
     else:
         shuffle = False
 
-    vocab_path = curdir + '/MHCH_SSA/' + data_name + '/vocab.pkl'
+    vocab_path = curdir + '/data/' + data_name + '/vocab.pkl'
 
     memory = float(args.memory)
     logger.info("Memory in train %s." % memory)

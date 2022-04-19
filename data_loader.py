@@ -34,10 +34,10 @@ class DataLoader(object):
         self.dialog_max_round = 50
 
         if data_name == 'clothes':
-            dataset_folder_name = '/MHCH_SSA' + '/clothes'
+            dataset_folder_name = '/data' + '/clothes'
 
         elif data_name == 'makeup':
-            dataset_folder_name = '/MHCH_SSA' + '/makeup'
+            dataset_folder_name = '/data' + '/makeup'
 
         else:
             raise ValueError("Please confirm the correct data mode you entered.")
