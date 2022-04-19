@@ -1,0 +1,33 @@
+{
+    "model_name": "rssn",
+    "data_mode": "clothes",
+
+    "classification_dim": 32,
+    "embedding_dim": 200,
+    "dense_dim": 256,
+    "attention_size": 64,
+    "rnn_dim": 128,
+    "state_dim": 1,
+    "num_class": 2,
+
+    "num_heads": 4,
+    "ff_dim": 512,
+
+    "keep_prob": 0.65,
+    "learning_rate": 0.0015,
+    "l2_reg_lambda": 0.00003,
+    "weight_decay": 0.0,
+    "warmup_steps": 0,
+    "loss_lambda": 0.3,
+
+    "optimizer": "adam",
+    "batch_size": 128,
+    "epochs": 100,
+
+    "mode": "train",
+    "is_val": 1,
+    "is_test": 1,
+    "save_best": 1,
+    "shuffle": 1
+  }
+  
