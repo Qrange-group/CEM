@@ -88,10 +88,10 @@ To construct the vocabulary from the pre-trained word embeddings and corpus. For
 
 - Train the model (including training, validation, and testing)
 ```bash
-CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways mt --model_name rssn --data_name clothes --log_info weight_satisfaction > ./logs/clothes_weight_satisfaction.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways mt --model_name cmhch --data_name clothes --log_info weight_satisfaction > ./logs/clothes_weight_satisfaction.log 2>&1 &
 
-CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways counterfactual --model_name rssn --data_name makeup --log_info counterfactual_cost_loss_pre_train > ./logs/counterfactual.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways counterfactual --model_name cmhch --data_name makeup --log_info counterfactual_cost_loss_pre_train > ./logs/counterfactual.log 2>&1 &
 ```
-nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways counterfactual --model_name rssn --data_name clothes --log_info counterfactual_cost_loss_pre_train > ./logs/clothes_counterfactual.log 2>&1 &
+nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways counterfactual --model_name cmhch --data_name clothes --log_info counterfactual_cost_loss_pre_train > ./logs/clothes_counterfactual.log 2>&1 &
 
 dpkg -i 

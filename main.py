@@ -40,7 +40,7 @@ def main():
                         help='Phase: Can be train or predict, the default value is train.')
     parser.add_argument('--data_name', default='clothes',
                         help='Data_Name: The data you will use.')
-    parser.add_argument('--model_name', default='rssn',
+    parser.add_argument('--model_name', default='cmhch',
                         help='Model_Name: The model you will use.')
     parser.add_argument('--model_path', default='none',
                         help='Model_Path: The model path you will load.')
@@ -131,7 +131,7 @@ def main():
     else:
         shuffle = False
 
-    vocab_path = curdir + '/MHCH_SSA/' + data_name + '/vocab.pkl'
+    vocab_path = curdir + '/data/' + data_name + '/vocab.pkl'
 
     memory = float(args.memory)
     logger.info("Memory in train %s." % memory)
@@ -141,8 +141,8 @@ def main():
         vocab = pkl.load(fp)
 
     # Get Network Framework
-    if model_name == 'rssn':
-        network = RSSN(memory=memory, vocab=vocab, config_dict=model_config)
+    if model_name == 'cmhch':
+        network = CMHCH(memory=memory, vocab=vocab, config_dict=model_config)
     else:
         logger.info("We can't find {}: Please check model you want."
                     .format(model_name))

@@ -1,5 +1,5 @@
 {
-    "model_name": "rssn",
+    "model_name": "cmhch",
     "data_mode": "clothes",
 
     "classification_dim": 32,
