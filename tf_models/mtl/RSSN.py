@@ -237,8 +237,11 @@ class RSSN(Network):
             """
             with tf.name_scope(scope, "log_loss"):
                 # weight = tf.concat([tf.pow(tf.expand_dims((1 - probs)[:, :, 1], -1), 0.5), tf.pow(tf.expand_dims(probs[:, :, 0], -1), 0.5)], -1)
-                # losses = - tf.reduce_sum(weight * labels * tf.math.log(probs + epsilon), -1)
-                losses = - tf.reduce_sum(labels * tf.math.log(probs + epsilon), -1)
+                weight = tf.concat([tf.expand_dims(self.score_logits[:, 0], -1), tf.expand_dims(self.score_logits[:, 2], -1)], -1)
+                weight = tf.expand_dims(weight, 1)
+                losses = - tf.reduce_sum(weight * labels * tf.math.log(probs + epsilon), -1)
+                
+                # losses = - tf.reduce_sum(labels * tf.math.log(probs + epsilon), -1)
             return losses
 
         # masked main loss
