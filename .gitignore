@@ -1,0 +1,11 @@
+/__pycache__
+*.pyc
+*.ipynb
+/.vscode
+/.idea
+/logs
+/tensorboard_dir
+/tf_models/layers/__pycache__
+/tf_models/mtl/__pycache__
+/weights
+
