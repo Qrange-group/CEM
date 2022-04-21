@@ -27,7 +27,7 @@ from keras.utils import to_categorical
 
 class DataLoader(object):
     def __init__(
-        self, task="train", data_name="normal", use_pre_train=False, embed_size=200
+        self, task="train", data="normal", use_pre_train=False, embed_size=200
     ):
         """
         Constant variable declaration and configuration.
@@ -35,10 +35,10 @@ class DataLoader(object):
         self.dialog_max_len = 64
         self.dialog_max_round = 50
 
-        if data_name == "clothes":
+        if data == "clothes":
             dataset_folder_name = "/data" + "/clothes"
 
-        elif data_name == "makeup":
+        elif data == "makeup":
             dataset_folder_name = "/data" + "/makeup"
 
         else:
@@ -282,10 +282,10 @@ if __name__ == "__main__":
         help="task: select the train/eval/test task to process.",
     )
     parser.add_argument(
-        "--data_name",
+        "--data",
         default="clothes",
         type=str,
-        help="data_name: using which dataset.",
+        help="data: using which dataset.",
     )
     parser.add_argument(
         "--form",
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     data_loader = DataLoader(
-        task=args.task, data_name=args.data_name, use_pre_train=args.use_pretrain
+        task=args.task, data=args.data, use_pre_train=args.use_pretrain
     )
 
     if args.phase == "test_load":

@@ -75,13 +75,13 @@ To construct the vocabulary from the pre-trained word embeddings and corpus. For
 - Train the model (including training, validation, and testing)
 
 ```bash
-nohup python -u -W ignore main.py --task train --ways cmhch --data_name makeup --log_info tune > ./logs/cmhch.log 2>&1 &
+nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info tune > ./logs/cmhch.log 2>&1 &
 
 ```
 
 - Test the model
 
 ```bash
-nohup python -u -W ignore main.py --task test --ways cmhch --data_name makeup --info test --model_path /home/user02/zss/robot/CMHCH/weights/makeup/cmhch.counterfactual.total_epoch80.pre_epoch20/best > ./logs/cmhch.log 2>&1 &
+nohup python -u -W ignore main.py --task test --model cmhch --data makeup --info test --model_path /home/user02/zss/robot/CMHCH/weights/makeup/cmhch.tune.total_epoch80.pre_epoch20/best > ./logs/cmhch.log 2>&1 &
 
 ```

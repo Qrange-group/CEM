@@ -36,10 +36,7 @@ def main():
         help="Task: Can be train or test, the default value is train.",
     )
     parser.add_argument(
-        "--data_name", default="clothes", help="Data_Name: The data you will use."
-    )
-    parser.add_argument(
-        "--model_name", default="cmhch", help="Model_Name: The model you will use."
+        "--data", default="clothes", help="Data: The data you will use."
     )
     parser.add_argument(
         "--model_path", default="none", help="Model_Path: The model path you will load."
@@ -54,9 +51,9 @@ def main():
         help="path of the log file.",
     )
     parser.add_argument(
-        "--ways",
+        "--model",
         default="cmhch",
-        help="decide use what kind of training method.",
+        help="decide use what kind of model.",
     )
     parser.add_argument(
         "--use_pretrain",
@@ -82,13 +79,11 @@ def main():
         + "."
         + args.info
         + "."
-        + args.model_name
+        + args.model
         + "."
-        + args.data_name
+        + args.data
         + "."
         + args.task
-        + "."
-        + args.ways
         + ".log"
     )
 
@@ -107,12 +102,12 @@ def main():
     # get object named data_loader
     use_pre_train = 1 if args.use_pretrain == "1" else 0
 
-    data_prepare = DataLoader(data_name=args.data_name, use_pre_train=use_pre_train)
+    data_prepare = DataLoader(data=args.data, use_pre_train=use_pre_train)
 
     # Get config from file
     logger.info("Load dataset and vocab...")
-    data_config_path = CONFIG_ROOT + "/data/config." + args.data_name + ".json"
-    model_config_path = CONFIG_ROOT + "/model/config." + args.model_name + ".json"
+    data_config_path = CONFIG_ROOT + "/data/config." + args.data + ".json"
+    model_config_path = CONFIG_ROOT + "/model/config." + args.model + ".json"
     data_config = data_prepare.load_config(data_config_path)
     model_config = data_prepare.load_config(model_config_path)
 
@@ -120,7 +115,6 @@ def main():
     logger.info("Model config is {}".format(model_config))
 
     # Get config param
-    model_name = model_config["model_name"]
     batch_size = model_config["batch_size"]
     epochs = model_config["total_epoch"]
     keep_prob = model_config["keep_prob"]
@@ -129,17 +123,14 @@ def main():
     is_test = model_config["is_test"]
     save_best = model_config["save_best"]
     shuffle = model_config["shuffle"]
-
-    data_name = data_config["data_name"]
     nb_classes = data_config["nb_classes"]
-    task = args.task
 
     if shuffle == 1:
         shuffle = True
     else:
         shuffle = False
 
-    vocab_path = curdir + "/data/" + data_name + "/vocab.pkl"
+    vocab_path = curdir + "/data/" + args.data + "/vocab.pkl"
 
     memory = float(args.memory)
     logger.info(
@@ -151,19 +142,19 @@ def main():
         vocab = pkl.load(fp)
 
     # Get Network Framework
-    if model_name == "cmhch":
+    if args.model == "cmhch":
         network = CMHCH(memory=memory, vocab=vocab, config_dict=model_config)
     else:
-        logger.info("We can't find {}: Please check model you want.".format(model_name))
+        logger.info("We can't find {}: Please check model you want.".format(args.model))
         raise ValueError(
-            "We can't find {}: Please check model you want.".format(model_name)
+            "We can't find {}: Please check model you want.".format(args.model)
         )
 
     # Set param for network
     network.set_nb_words(min(vocab.size(), data_config["nb_words"]) + 1)
-    network.set_data_name(data_name)
+    network.set_data(args.data)
     network.set_name(
-        model_name
+        args.model
         + "."
         + args.info
         + ".total_epoch"
@@ -185,20 +176,20 @@ def main():
             data_generator,
             keep_prob,
             epochs,
-            data_name,
-            task=task,
+            data=args.data,
+            task=args.task,
             batch_size=batch_size,
             nb_classes=nb_classes,
             shuffle=shuffle,
             is_val=is_val,
             is_test=is_test,
             save_best=save_best,
-            ways=args.ways,
+            model=args.model,
         )
     elif args.task == "test":
         network.test_cmhch(
             data_generator,
-            data_name,
+            args.data,
             batch_size=batch_size,
             nb_classes=nb_classes,
             test_task="test",
@@ -231,7 +222,7 @@ def train(
     data_generator,
     keep_prob,
     epochs,
-    data_name,
+    data,
     task="train",
     batch_size=20,
     nb_classes=2,
@@ -239,15 +230,15 @@ def train(
     is_val=True,
     is_test=True,
     save_best=True,
-    ways="crf",
+    model="cmhch",
     cf_data_generator="",
 ):
-    if ways == "mhch":
+    if model == "mhch":
         network.train_mhch(
             data_generator=data_generator,
             keep_prob=keep_prob,
             epochs=epochs,
-            data_name=data_name,
+            data=data,
             task=task,
             batch_size=batch_size,
             nb_classes=nb_classes,
@@ -256,12 +247,12 @@ def train(
             is_test=is_test,
             save_best=save_best,
         )
-    elif ways == "ssa":
+    elif model == "ssa":
         network.train_ssa(
             data_generator=data_generator,
             keep_prob=keep_prob,
             epochs=epochs,
-            data_name=data_name,
+            data=data,
             task=task,
             batch_size=batch_size,
             nb_classes=nb_classes,
@@ -270,12 +261,12 @@ def train(
             is_test=is_test,
             save_best=save_best,
         )
-    elif ways == "cmhch":
+    elif model == "cmhch":
         network.train_cmhch(
             data_generator=data_generator,
             keep_prob=keep_prob,
             epochs=epochs,
-            data_name=data_name,
+            data=data,
             task=task,
             batch_size=batch_size,
             nb_classes=nb_classes,
@@ -287,7 +278,7 @@ def train(
             save_frequency=10,
         )
     else:
-        raise ValueError("Wrong training ways parameters: {}".format(ways))
+        raise ValueError("Wrong training model parameters: {}".format(model))
 
 
 if __name__ == "__main__":

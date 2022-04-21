@@ -88,7 +88,7 @@ class Network(object):
         self.loss_lambda = loss_lambda
 
         self.model_name = "Network"
-        self.data_name = "normal"
+        self.data = "normal"
 
         # session info config
         self.gpu = gpu
@@ -115,9 +115,9 @@ class Network(object):
         self.nb_words = nb_words
         self.logger.info("set nb_words.")
 
-    def set_data_name(self, data_name):
-        self.data_name = data_name
-        self.logger.info("set data_name.")
+    def set_data(self, data):
+        self.data = data
+        self.logger.info("set data.")
 
     def set_name(self, model_name):
         self.model_name = model_name
@@ -137,18 +137,16 @@ class Network(object):
 
     def build_dir(self):
         # experimental results saving path
-        self.save_dir = (
-            curdir + "/weights/" + self.data_name + "/" + self.model_name + "/"
-        )
-        if not os.path.exists(curdir + "/weights/" + self.data_name):
-            os.makedirs(curdir + "/weights/" + self.data_name)
+        self.save_dir = curdir + "/weights/" + self.data + "/" + self.model_name + "/"
+        if not os.path.exists(curdir + "/weights/" + self.data):
+            os.makedirs(curdir + "/weights/" + self.data)
         if os.path.exists(self.save_dir):
             shutil.rmtree(self.save_dir)
         os.makedirs(self.save_dir)
         os.makedirs(self.save_dir + "best")
 
         self.tensorboard_dir = (
-            curdir + "/tensorboard_dir/" + self.data_name + "/" + self.model_name + "/"
+            curdir + "/tensorboard_dir/" + self.data + "/" + self.model_name + "/"
         )
 
         if not os.path.exists(self.tensorboard_dir):
@@ -773,7 +771,7 @@ class Network(object):
         data_generator,
         keep_prob,
         epochs,
-        data_name,
+        data,
         task="train",
         batch_size=20,
         nb_classes=2,
@@ -787,15 +785,11 @@ class Network(object):
         test_task="test",
     ):
 
-        print("Using counterfactual classification trainer.")
+        print("Using cmhch trainer.")
         max_val = 0
 
         for epoch in range(epochs):
-            self.logger.info(
-                "Training the models for epoch {} with batch size {}".format(
-                    epoch, batch_size
-                )
-            )
+            self.logger.info("------------- Epoch {} -------------".format(epoch))
             print("Training Epoch: {}".format(epoch))
             counter, total_loss = 0.0, 0.0
             # For handoff and GTT
@@ -835,7 +829,7 @@ class Network(object):
                     self.dropout_keep_prob: keep_prob,
                 }
                 try:
-                    if epoch >= 20:
+                    if epoch > 20:
                         (
                             _,
                             step,
@@ -927,7 +921,7 @@ class Network(object):
 
             print(str(confusion_matrix(total_handoff_flat, total_pre_handoff_flat)))
             print(
-                "MHCH MT Metrics %s\t: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
+                "MHCH %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
                 % (
                     task,
                     total_loss / float(counter),
@@ -939,7 +933,7 @@ class Network(object):
                 )
             )
             self.logger.info(
-                "MHCH MT Metrics %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
+                "MHCH %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
                 % (
                     task,
                     total_loss / float(counter),
@@ -963,7 +957,7 @@ class Network(object):
 
             print(confusion_matrix(score_list, pre_score_list))
             print(
-                "SSA MT Training Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+                "SSA %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
                 % (
                     task,
                     total_loss / float(counter),
@@ -975,7 +969,7 @@ class Network(object):
                 )
             )
             self.logger.info(
-                "SSA MT Training Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+                "SSA %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
                 % (
                     task,
                     total_loss / float(counter),
@@ -1003,7 +997,7 @@ class Network(object):
                     eval_acc_ssa,
                 ) = self.evaluate_batch_cmhch(
                     data_generator,
-                    data_name,
+                    data,
                     task=val_task,
                     global_step=step,
                     batch_size=batch_size,
@@ -1037,7 +1031,7 @@ class Network(object):
             self.restore(self.save_dir + "best", "cmhch")
             self.evaluate_batch_cmhch(
                 data_generator,
-                data_name,
+                data,
                 task=test_task,
                 global_step=0,
                 batch_size=batch_size,
@@ -1051,7 +1045,7 @@ class Network(object):
     def evaluate_batch_cmhch(
         self,
         data_generator,
-        data_name,
+        data,
         global_step,
         task="eval",
         batch_size=32,
@@ -1148,12 +1142,28 @@ class Network(object):
 
         print(confusion_matrix(total_handoff_flat, total_pre_handoff_flat))
         print(
-            "MHCH MT Eval Metrics %s: F1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
-            % (task, f1_handoff, macro_handoff, auc_score, gtt_1, gtt_2, gtt_3)
+            "MHCH %s : Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
+            % (
+                task,
+                total_loss / float(counter),
+                f1_handoff,
+                macro_handoff,
+                gtt_1,
+                gtt_2,
+                gtt_3,
+            )
         )
         self.logger.info(
-            "MHCH MT Eval Metrics %s: F1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
-            % (task, f1_handoff, macro_handoff, auc_score, gtt_1, gtt_2, gtt_3)
+            "MHCH %s : Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
+            % (
+                task,
+                total_loss / float(counter),
+                f1_handoff,
+                macro_handoff,
+                gtt_1,
+                gtt_2,
+                gtt_3,
+            )
         )
 
         # sentiment
@@ -1178,7 +1188,7 @@ class Network(object):
 
         print(confusion_matrix(score_list, pre_score_list))
         print(
-            "SSA Eval Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+            "SSA %s : Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
             % (
                 task,
                 total_loss / float(counter),
@@ -1190,7 +1200,7 @@ class Network(object):
             )
         )
         self.logger.info(
-            "SSA Eval Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+            "SSA %s : Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
             % (
                 task,
                 total_loss / float(counter),
@@ -1204,7 +1214,7 @@ class Network(object):
 
         if task == "test":
             self.logger.info(
-                "Handoff Test Metrics:\tF1Score\tMacro_F1Score\tAUC\tGS-I\tGS-II\tGS-III"
+                "Handoff Test Metrics:\tF1Score\tMacro_F1Score\tAUC\tGT-I\tGT-II\tGT-III"
             )
             self.logger.info(
                 "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
@@ -1237,7 +1247,7 @@ class Network(object):
                 "\n" + str(confusion_matrix(total_senti_flat, total_pre_senti_flat))
             )
 
-            self.logger.info("SSA Test Metrics:\tWS F1\tMT F1\tUS F1\tMacro F1\tAcc.")
+            self.logger.info("SSA Test Metrics:\tWS F1\tF1\tUS F1\tMacro F1\tAcc.")
             self.logger.info(
                 "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
                 % (task, ssa_f1_2, ssa_f1_1, ssa_f1_0, ssa_macro_f1, ssa_acc)
@@ -1320,7 +1330,7 @@ class Network(object):
                         tag="metrics/score_acc", simple_value=ssa_acc
                     ),
                     tf.compat.v1.Summary.Value(
-                        tag="metrics/GS-III", simple_value=gtt_3 * 100
+                        tag="metrics/GT-III", simple_value=gtt_3 * 100
                     ),
                 ]
             )
@@ -1344,7 +1354,7 @@ class Network(object):
     def test_cmhch(
         self,
         data_generator,
-        data_name,
+        data,
         batch_size=20,
         nb_classes=2,
         test_task="test",
@@ -1353,7 +1363,7 @@ class Network(object):
         self.restore(model_path, "cmhch")
         self.evaluate_batch_cmhch(
             data_generator,
-            data_name,
+            data,
             task=test_task,
             global_step=0,
             batch_size=batch_size,
@@ -1366,7 +1376,7 @@ class Network(object):
         data_generator,
         keep_prob,
         epochs,
-        data_name,
+        data,
         task="train",
         batch_size=20,
         nb_classes=2,
@@ -1458,11 +1468,11 @@ class Network(object):
             )
 
             print(
-                "MHCH Metrics %s\t: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
+                "MHCH Metrics %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
                 % (task, total_loss / float(counter), f1, macro, gtt_1, gtt_2, gtt_3)
             )
             self.logger.info(
-                "MHCH Metrics %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
+                "MHCH Metrics %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
                 % (task, total_loss / float(counter), f1, macro, gtt_1, gtt_2, gtt_3)
             )
 
@@ -1478,7 +1488,7 @@ class Network(object):
                     gs3,
                 ) = self.evaluate_batch_mhch(
                     data_generator,
-                    data_name,
+                    data,
                     task=val_task,
                     batch_size=batch_size,
                     nb_classes=nb_classes,
@@ -1504,7 +1514,7 @@ class Network(object):
             self.restore(self.save_dir, self.model_name + ".best")
             self.evaluate_batch_mhch(
                 data_generator,
-                data_name,
+                data,
                 task=test_task,
                 batch_size=batch_size,
                 nb_classes=nb_classes,
@@ -1516,7 +1526,7 @@ class Network(object):
     def evaluate_batch_mhch(
         self,
         data_generator,
-        data_name,
+        data,
         task="eval",
         batch_size=32,
         nb_classes=2,
@@ -1586,7 +1596,7 @@ class Network(object):
         auc_score = auc(fpr, tpr)
 
         print(
-            "MHCH Eval Metrics %s\t: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
+            "MHCH %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
             % (
                 task,
                 total_loss / float(counter),
@@ -1599,7 +1609,7 @@ class Network(object):
             )
         )
         self.logger.info(
-            "MHCH Eval Metrics %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGS-I:%.3f\tGS-II:%.3f\tGS-III:%.3f"
+            "MHCH %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
             % (
                 task,
                 total_loss / float(counter),
@@ -1614,7 +1624,7 @@ class Network(object):
 
         if task == "test":
             self.logger.info(
-                "Handoff Test Metrics:\tF1Score\tMacro_F1Score\tAUC\tGS-I\tGS-II\tGS-III"
+                "Handoff Test Metrics:\tF1Score\tMacro_F1Score\tAUC\tGT-I\tGT-II\tGT-III"
             )
             self.logger.info(
                 "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
@@ -1710,7 +1720,7 @@ class Network(object):
         data_generator,
         keep_prob,
         epochs,
-        data_name,
+        data,
         task="train",
         batch_size=20,
         nb_classes=2,
@@ -1786,11 +1796,11 @@ class Network(object):
 
             print(confusion_matrix(label_list, pre_label_list))
             print(
-                "SSA Training Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+                "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
                 % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
             )
             self.logger.info(
-                "SSA Training Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+                "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
                 % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
             )
 
@@ -1805,7 +1815,7 @@ class Network(object):
                     eval_acc,
                 ) = self.evaluate_batch_ssa(
                     data_generator,
-                    data_name,
+                    data,
                     task=val_task,
                     batch_size=batch_size,
                     nb_classes=nb_classes,
@@ -1832,7 +1842,7 @@ class Network(object):
             self.restore(self.save_dir, self.model_name + ".best")
             self.evaluate_batch_ssa(
                 data_generator,
-                data_name,
+                data,
                 task=test_task,
                 batch_size=batch_size,
                 nb_classes=nb_classes,
@@ -1844,7 +1854,7 @@ class Network(object):
     def evaluate_batch_ssa(
         self,
         data_generator,
-        data_name,
+        data,
         task="eval",
         batch_size=32,
         nb_classes=2,
@@ -1896,18 +1906,16 @@ class Network(object):
         print(confusion_matrix(label_list, pre_label_list))
 
         print(
-            "SSA Training Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+            "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
             % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
         )
         self.logger.info(
-            "SSA Training Metrics %s\t: Loss:%.3f\tWS F1:%.3f\tMT F1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
+            "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
             % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
         )
 
         if task == "test":
-            self.logger.info(
-                "Handoff Test Metrics:\tWS F1\tMT F1\tUS F1\tMacro F1\tAcc."
-            )
+            self.logger.info("Handoff Test Metrics:\tWS F1\tF1\tUS F1\tMacro F1\tAcc.")
             self.logger.info(
                 "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
                 % (task, f1_2, f1_1, f1_0, macro_f1, acc)
