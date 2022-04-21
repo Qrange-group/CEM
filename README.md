@@ -75,9 +75,16 @@ To construct the vocabulary from the pre-trained word embeddings and corpus. For
 - Train the model (including training, validation, and testing)
 
 ```bash
-nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info tune > ./logs/cmhch.log 2>&1 &
+CUDA_VISIBLE_DEVICES=0,3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --is_only_ssa 1 --info only_ssa > ./logs/makeup_only_ssa.log 2>&1 &
+
+CUDA_VISIBLE_DEVICES=1,3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --is_only_cf 1 --info only_cf > ./logs/makeup_only_cf.log 2>&1 &
+
+CUDA_VISIBLE_DEVICES=2,3 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --is_only_ssa 1 --info only_ssa > ./logs/clothes_only_ssa.log 2>&1 &
+
+CUDA_VISIBLE_DEVICES=3,0 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --is_only_cf 1 --info only_cf > ./logs/clothes_only_cf.log 2>&1 &
 
 ```
+kill -9 `ps -ef | grep CMHCH/main | awk '{print $2}'`
 
 - Test the model
 
