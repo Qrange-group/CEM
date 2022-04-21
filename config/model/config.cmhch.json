@@ -22,9 +22,9 @@
 
     "optimizer": "adam",
     "batch_size": 128,
-    "epochs": 100,
+    "total_epoch": 80,
+    "pre_epoch": 20,
 
-    "mode": "train",
     "is_val": 1,
     "is_test": 1,
     "save_best": 1,

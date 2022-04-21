@@ -94,4 +94,6 @@ CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --phase train --suffix 
 ```
 nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways counterfactual --model_name cmhch --data_name clothes --log_info counterfactual_cost_loss_pre_train > ./logs/clothes_counterfactual.log 2>&1 &
 
-dpkg -i 
+nohup python -u -W ignore main.py --task train --ways cmhch --data_name makeup > ./logs/cmhch.log 2>&1 &
+
+nohup python -u -W ignore main.py --task test --ways cmhch --data_name makeup --info test --model_path /home/user02/zss/robot/CMHCH/weights/makeup/cmhch.counterfactual.total_epoch80.pre_epoch20/best > ./logs/cmhch.log 2>&1 &

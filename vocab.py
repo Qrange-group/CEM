@@ -24,8 +24,8 @@ class Vocab(object):
         self.embed_dim = None
         self.embeddings = None
 
-        self.pad_token = '<blank>'
-        self.unk_token = '<unk>'
+        self.pad_token = "<blank>"
+        self.unk_token = "<unk>"
 
         self.initial_tokens = initial_tokens if initial_tokens is not None else []
         self.initial_tokens.extend([self.pad_token, self.unk_token])
@@ -48,8 +48,8 @@ class Vocab(object):
         :param file_path: str   a file with a word in each line.
         :return: None
         """
-        for line in open(file_path, 'r'):
-            token = line.strip('\n')
+        for line in open(file_path, "r"):
+            token = line.strip("\n")
             self.add(token)
 
     def get_id(self, token):
@@ -62,7 +62,7 @@ class Vocab(object):
         try:
             return self.token2id[token]
         except KeyError as e:
-            print('Unknown token {}'.format(token))
+            print("Unknown token {}".format(token))
             return self.token2id[self.unk_token]
 
     def get_token(self, idx):
@@ -106,7 +106,9 @@ class Vocab(object):
         :param min_cnt: int   tokens with frequency less than min_cnt is filtered
         :return: None
         """
-        filtered_tokens = [token for token in self.token2id if self.token_cnt[token] >= min_cnt]
+        filtered_tokens = [
+            token for token in self.token2id if self.token_cnt[token] >= min_cnt
+        ]
         self.token2id = {}
         self.id2token = {}
         for token in self.initial_tokens:
@@ -133,17 +135,17 @@ class Vocab(object):
         """
         trained_embeddings = {}
         count = 0
-        with open(embedding_path, 'r', newline='\n') as fin:
+        with open(embedding_path, "r", newline="\n") as fin:
             while True:
                 try:
-                    line = fin.readline().replace('\n', '')
+                    line = fin.readline().replace("\n", "")
                 except Exception as e:
                     print("{}: {}".format(e, line))
                     continue
                 if not line:
                     print("Pre-trained embeddings load successfully!")
                     break
-                contents = line.strip().split(' ')
+                contents = line.strip().split(" ")
                 if len(contents) == 2:
                     continue
                 token = contents[0]
