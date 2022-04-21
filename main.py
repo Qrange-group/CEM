@@ -63,7 +63,16 @@ def main():
     parser.add_argument(
         "--info", default="ordinary", help="information about model training."
     )
-
+    parser.add_argument(
+        "--is_only_cf",
+        default="0",
+        help="ablation study for counterfactual.",
+    )
+    parser.add_argument(
+        "--is_only_ssa",
+        default="0",
+        help="ablation study for satisfaction.",
+    )
     args = parser.parse_args()
 
     now_time = time.strftime("%Y.%m.%d", time.localtime())
@@ -143,7 +152,15 @@ def main():
 
     # Get Network Framework
     if args.model == "cmhch":
-        network = CMHCH(memory=memory, vocab=vocab, config_dict=model_config)
+        is_only_cf = True if args.is_only_cf == 1 else False
+        is_only_ssa = True if args.is_only_ssa == 1 else False
+        network = CMHCH(
+            memory=memory,
+            vocab=vocab,
+            config_dict=model_config,
+            is_only_cf=is_only_cf,
+            is_only_ssa=is_only_ssa,
+        )
     else:
         logger.info("We can't find {}: Please check model you want.".format(args.model))
         raise ValueError(

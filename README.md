@@ -75,7 +75,7 @@ To construct the vocabulary from the pre-trained word embeddings and corpus. For
 - Train the model (including training, validation, and testing)
 
 ```bash
-nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info tune > ./logs/cmhch.log 2>&1 &
+nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info tune > ./logs/cmhch.log 2>&1 &
 
 ```
 

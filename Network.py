@@ -57,8 +57,14 @@ class Network(object):
         optim="adam",
         gpu="0",
         memory=0,
+        is_only_ssa=False,
+        is_only_cf=False,
         **kwargs
     ):
+        # ablation study
+        self.is_only_ssa = is_only_ssa
+        self.is_only_cf = is_only_cf
+
         # logging
         self.logger = logging.getLogger("Tensorflow")
 
@@ -829,28 +835,7 @@ class Network(object):
                     self.dropout_keep_prob: keep_prob,
                 }
                 try:
-                    if epoch > 20:
-                        (
-                            _,
-                            step,
-                            summaries,
-                            loss,
-                            sequence,
-                            senti,
-                            score,
-                        ) = self.sess.run(
-                            [
-                                self.train_op,
-                                self.global_step,
-                                self.summaries,
-                                self.loss,
-                                self.output,
-                                self.senti,
-                                self.pre_score,
-                            ],
-                            feed_dict,
-                        )
-                    else:
+                    if (not self.is_only_ssa) and epoch < 20:
                         (
                             _,
                             step,
@@ -871,6 +856,28 @@ class Network(object):
                             ],
                             feed_dict,
                         )
+                    else:
+                        (
+                            _,
+                            step,
+                            summaries,
+                            loss,
+                            sequence,
+                            senti,
+                            score,
+                        ) = self.sess.run(
+                            [
+                                self.train_op,
+                                self.global_step,
+                                self.summaries,
+                                self.loss,
+                                self.output,
+                                self.senti,
+                                self.pre_score,
+                            ],
+                            feed_dict,
+                        )
+
                     self.summary_writer_train.add_summary(summaries, step)
                     # for handoff metric
                     handoff_y = np.argmax(batch_handoff, -1)

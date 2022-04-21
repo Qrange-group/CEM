@@ -21,7 +21,15 @@ from tf_models.layers.transformer import *
 
 
 class CMHCH(Network):
-    def __init__(self, memory=0, vocab=None, config_dict=None, **kwargs):
+    def __init__(
+        self,
+        memory=0,
+        vocab=None,
+        config_dict=None,
+        is_only_ssa=False,
+        is_only_cf=False,
+        **kwargs
+    ):
         Network.__init__(self, memory=memory, vocab=vocab)
         self.model_name = self.__class__.__name__
         self.logger.info("Model Name: {}".format(self.model_name))
@@ -322,16 +330,17 @@ class CMHCH(Network):
             )
             self.senti_logits = self.ssa_ff_customer_distri
             self.score_logits = self.ssa_combine_vec
-            self.main_logits = self.main_logits * tf.expand_dims(
-                tf.concat(
-                    [
-                        tf.expand_dims(self.score_logits[:, 0], axis=-1),
-                        tf.expand_dims(self.score_logits[:, 2], axis=-1),
-                    ],
-                    -1,
-                ),
-                1,
-            )
+            if not self.is_only_cf:
+                self.main_logits = self.main_logits * tf.expand_dims(
+                    tf.concat(
+                        [
+                            tf.expand_dims(self.score_logits[:, 0], axis=-1),
+                            tf.expand_dims(self.score_logits[:, 2], axis=-1),
+                        ],
+                        -1,
+                    ),
+                    1,
+                )
 
             # [B, T]
             self.output = tf.argmax(self.main_logits, axis=-1)
@@ -388,11 +397,14 @@ class CMHCH(Network):
         self.cost_loss_simulator = tf.reduce_mean(self.main_logits[:, 1])
 
         # Combine loss
-        self.loss = (
-            self.main_loss
-            + self.loss_lambda * self.score_loss
-            + 0.01 * self.cost_loss_simulator
-        )
+        if self.is_only_ssa:
+            self.loss = self.main_loss + self.loss_lambda * self.score_loss
+        else:
+            self.loss = (
+                self.main_loss
+                + self.loss_lambda * self.score_loss
+                + 0.01 * self.cost_loss_simulator
+            )
         self.loss_pre = tf.reduce_mean(
             tf.square(self.main_logits[:, 1] - self.main_y[:, 1])
         )
