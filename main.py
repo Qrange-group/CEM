@@ -68,7 +68,7 @@ def main():
     )
 
     args = parser.parse_args()
-    
+
     now_time = time.strftime("%Y.%m.%d", time.localtime())
 
     # log directory
@@ -202,7 +202,7 @@ def main():
             batch_size=batch_size,
             nb_classes=nb_classes,
             test_task="test",
-            model_path = args.model_path
+            model_path=args.model_path,
         )
     else:
         logger.info(
@@ -288,6 +288,7 @@ def train(
         )
     else:
         raise ValueError("Wrong training ways parameters: {}".format(ways))
+
 
 if __name__ == "__main__":
     main()

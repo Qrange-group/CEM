@@ -134,7 +134,7 @@ class Network(object):
     def set_from_data_config(self, data_config):
         self.nb_classes = data_config["nb_classes"]
         self.logger.info("set from data_config.")
-    
+
     def build_dir(self):
         # experimental results saving path
         self.save_dir = (
@@ -170,7 +170,7 @@ class Network(object):
         self.summary_writer_eval = tf.compat.v1.summary.FileWriter(
             self.tensorboard_dir + "eval"
         )
-        
+
     def build_graph(self):
         """
         Builds the computation graph with Tensorflow
@@ -182,7 +182,7 @@ class Network(object):
         self._compute_loss()
         self._create_train_op()
         self.saver = tf.compat.v1.train.Saver()
-        
+
         # self.logger.info('Time to build graph: {} s'.format(time.time() - start_t))
         # print_trainable_variables(output_detail=True, logger=self.logger)
         # param_num = sum([np.prod(self.sess.run(tf.shape(v))) for v in self.all_params])
@@ -193,8 +193,6 @@ class Network(object):
         # pure_param_num = sum([np.prod(self.sess.run(tf.shape(v)))
         #                       for v in self.all_params if 'word_embedding' not in v.name and 'weights' not in v.name])
         # self.logger.info('There are {} parameters in the models without word embedding'.format(pure_param_num))
-
-        
 
         # initialize the models
         self.sess.run(tf.compat.v1.global_variables_initializer())
@@ -909,10 +907,8 @@ class Network(object):
                 if os.path.exists(self.save_dir + str(epoch)):
                     shutil.rmtree(self.save_dir + str(epoch))
                 os.makedirs(self.save_dir + str(epoch))
-                self.save(
-                    self.save_dir + str(epoch), "cmhch"
-                )
-            
+                self.save(self.save_dir + str(epoch), "cmhch")
+
             total_handoff_flat = np.concatenate(total_handoff)
             total_pre_handoff_flat = np.concatenate(total_pre_handoff)
             # handoff
@@ -990,7 +986,7 @@ class Network(object):
                     ssa_acc,
                 )
             )
-            
+
             if is_val:
                 (
                     eval_loss,
@@ -1352,7 +1348,7 @@ class Network(object):
         batch_size=20,
         nb_classes=2,
         test_task="test",
-        model_path = ""
+        model_path="",
     ):
         self.restore(model_path, "cmhch")
         self.evaluate_batch_cmhch(
@@ -1470,7 +1466,6 @@ class Network(object):
                 % (task, total_loss / float(counter), f1, macro, gtt_1, gtt_2, gtt_3)
             )
 
-            
             if is_val:
                 (
                     eval_loss,
@@ -1799,7 +1794,6 @@ class Network(object):
                 % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
             )
 
-            
             if is_val:
 
                 (
