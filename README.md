@@ -1,20 +1,6 @@
-# RSSN for MHCH+SSA
-Core implementation of EMNLP-2021 paper: [A Role-Selected Sharing Network for Joint Machine-Human Chatting Handoff and Service Satisfaction Analysis](https://arxiv.org/abs/2109.08412)
+# CMHCH
 
-<div align=center><img src="./resources/exemplar.png" height="500"/></div>
-
-# Requirements
-- Python 3.6 or higher
-- tensorflow==1.14.0
-- Keras==2.2.5
-- tqdm==4.35.0
-- jieba==0.39
-
-# Environment
-- Tesla V100 16GB GPU
-- CUDA 10.1
-
-# Data Format
+## Data Format
 Each json file is a data list that includes dialogue samples. The format of a dialogue sample is shown as follows:
 ```json
 {
@@ -81,19 +67,21 @@ Our experiments are conducted based on two publicly available Chinese customer s
 For the security of private information from customers, we performed the data desensitization and converted words to IDs following [Song et al. (2019)](https://github.com/songkaisong/ssa).
 The vocab.pkl contains the pre-trained glove word embeddings of token ids.
 
-# Usage
+## Usage
 - Data processing
 
 To construct the vocabulary from the pre-trained word embeddings and corpus. For the security of private information from customers, we performed the data desensitization and converted words to IDs. We save the processed data into pickle file.
 
 - Train the model (including training, validation, and testing)
+
 ```bash
-CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways mt --model_name cmhch --data_name clothes --log_info weight_satisfaction > ./logs/clothes_weight_satisfaction.log 2>&1 &
+nohup python -u -W ignore main.py --task train --ways cmhch --data_name makeup --log_info tune > ./logs/cmhch.log 2>&1 &
 
-CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways counterfactual --model_name cmhch --data_name makeup --log_info counterfactual_cost_loss_pre_train > ./logs/counterfactual.log 2>&1 &
 ```
-nohup python -u -W ignore main.py --phase train --suffix .128 --mode train --ways counterfactual --model_name cmhch --data_name clothes --log_info counterfactual_cost_loss_pre_train > ./logs/clothes_counterfactual.log 2>&1 &
 
-nohup python -u -W ignore main.py --task train --ways cmhch --data_name makeup > ./logs/cmhch.log 2>&1 &
+- Test the model
 
+```bash
 nohup python -u -W ignore main.py --task test --ways cmhch --data_name makeup --info test --model_path /home/user02/zss/robot/CMHCH/weights/makeup/cmhch.counterfactual.total_epoch80.pre_epoch20/best > ./logs/cmhch.log 2>&1 &
+
+```

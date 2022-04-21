@@ -33,7 +33,7 @@ def main():
     parser.add_argument(
         "--task",
         default="train",
-        help="Task: Can be train or predict, the default value is train.",
+        help="Task: Can be train or test, the default value is train.",
     )
     parser.add_argument(
         "--data_name", default="clothes", help="Data_Name: The data you will use."
