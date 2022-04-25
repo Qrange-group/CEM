@@ -21,7 +21,6 @@
     "loss_lambda": 0.3,
 
     "optimizer": "adam",
-    "batch_size": 128,
     "total_epoch": 80,
     "pre_epoch": 20,
 

@@ -44,6 +44,9 @@ def main():
     parser.add_argument(
         "--memory", default="0.", help="Memory: The gpu memory you will use."
     )
+    parser.add_argument(
+        "--batch_size", default="128", help="Batch size: The size of each batch of data."
+    )
     parser.add_argument("--gpu", default="0", help="GPU: Which gpu you will use.")
     parser.add_argument(
         "--log_path",
@@ -124,7 +127,7 @@ def main():
     logger.info("Model config is {}".format(model_config))
 
     # Get config param
-    batch_size = model_config["batch_size"]
+    batch_size = args.batch_size
     epochs = model_config["total_epoch"]
     keep_prob = model_config["keep_prob"]
 

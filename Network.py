@@ -105,7 +105,7 @@ class Network(object):
         if self.memory > 0:
             num_threads = os.environ.get("OMP_NUM_THREADS")
             self.logger.info("Memory use is %s." % self.memory)
-            gpu_options = tf.GPUOptions(
+            gpu_options = tf.compat.v1.GPUOptions(
                 per_process_gpu_memory_fraction=float(self.memory)
             )
             config = tf.compat.v1.ConfigProto(
@@ -113,11 +113,8 @@ class Network(object):
             )
             self.sess = tf.compat.v1.Session(config=config)
         else:
-            # config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
-            # config.gpu_options.allow_growth = True
-            # self.sess = tf.compat.v1.Session(config=config)
-            gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=1.0)
-            config = tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=False, log_device_placement=False)
+            config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
+            config.gpu_options.allow_growth = True
             self.sess = tf.compat.v1.Session(config=config)
 
     def set_nb_words(self, nb_words):
