@@ -904,11 +904,6 @@ class Network(object):
                 except ValueError as e:
                     self.logger.info("Wrong batch.{}".format(e))
 
-            if is_save and (epoch + 1) % save_frequency == 0:
-                if os.path.exists(self.save_dir + str(epoch)):
-                    shutil.rmtree(self.save_dir + str(epoch))
-                os.makedirs(self.save_dir + str(epoch))
-                self.save(self.save_dir + str(epoch), "cmhch")
 
             total_handoff_flat = np.concatenate(total_handoff)
             total_pre_handoff_flat = np.concatenate(total_pre_handoff)
@@ -1030,10 +1025,17 @@ class Network(object):
                 }
 
                 if metrics_dict["total_macro"] > max_val and save_best:
+                    shutil.rmtree(self.save_dir + "best")
                     max_val = metrics_dict["total_macro"]
                     self.save(self.save_dir + "best", "cmhch")
                     print("Saved!")
-
+            
+            if is_save and (epoch + 1) % save_frequency == 0:
+                if os.path.exists(self.save_dir + str(epoch)):
+                    shutil.rmtree(self.save_dir + str(epoch))
+                os.makedirs(self.save_dir + str(epoch))
+                self.save(self.save_dir + str(epoch), "cmhch")
+        
         if is_test:
             self.restore(self.save_dir + "best", "cmhch")
             self.evaluate_batch_cmhch(
