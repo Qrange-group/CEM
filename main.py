@@ -129,7 +129,7 @@ def main():
     logger.info("Model config is {}".format(model_config))
 
     # Get config param
-    batch_size = args.batch_size
+    batch_size = int(args.batch_size)
     epochs = model_config["total_epoch"]
     keep_prob = model_config["keep_prob"]
 
@@ -165,6 +165,7 @@ def main():
             config_dict=model_config,
             is_only_cf=is_only_cf,
             is_only_ssa=is_only_ssa,
+            batch_size=args.batch_size
         )
     else:
         logger.info("We can't find {}: Please check model you want.".format(args.model))

@@ -57,6 +57,7 @@ class Network(object):
         optim="adam",
         gpu="0",
         memory=0,
+        batch_size=128,
         is_only_ssa=False,
         is_only_cf=False,
         **kwargs
@@ -73,6 +74,7 @@ class Network(object):
         self.dia_max_len = dia_max_len
         self.nb_classes = nb_classes
         self.nb_words = nb_words
+        self.batch_size = batch_size
 
         # network config
         self.embedding_dim = embedding_dim

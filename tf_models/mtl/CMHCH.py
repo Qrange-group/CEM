@@ -26,8 +26,6 @@ class CMHCH(Network):
         memory=0,
         vocab=None,
         config_dict=None,
-        is_only_ssa=False,
-        is_only_cf=False,
         **kwargs
     ):
         Network.__init__(self, memory=memory, vocab=vocab)
@@ -35,7 +33,6 @@ class CMHCH(Network):
         self.logger.info("Model Name: {}".format(self.model_name))
 
         self.classification_dim = config_dict["classification_dim"]
-        self.batch_size = config_dict["batch_size"]
         self.state_dim = config_dict["state_dim"]
         self.num_class = config_dict["num_class"]
         self.rnn_dim = config_dict["rnn_dim"]

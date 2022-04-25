@@ -99,6 +99,6 @@ kill -9 `ps -ef | grep CMHCH/main | awk '{print $2}'`
 - Test the model
 
 ```bash
-nohup python -u -W ignore main.py --task test --model cmhch --data makeup --info test --model_path /home/user02/zss/robot/CMHCH/weights/makeup/cmhch.tune.total_epoch80.pre_epoch20/best > ./logs/cmhch.log 2>&1 &
+nohup python -u -W ignore main.py --task test --model cmhch --data clothes --info test --model_path /home/user02/zss/robot/CMHCH/weights/clothes/cmhch.ordinary.total_epoch80.pre_epoch20/best > ./logs/test.log 2>&1 &
 
 ```
