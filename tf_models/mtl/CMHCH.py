@@ -211,7 +211,7 @@ class CMHCH(Network):
             self.ssa2mhch_matrix = tf.matmul(
                 self.mhch_enc_dense, tf.transpose(self.ssa_enc_dense, perm=[0, 2, 1])
             )
-            paddings = tf.ones_like(self.ssa2mhch_matrix) * (-(2**32) + 1)
+            paddings = tf.ones_like(self.ssa2mhch_matrix) * (-(2 ** 32) + 1)
             self.ssa2mhch_matrix_dia_masked = tf.where(
                 tf.equal(self.dia_att_mask, 0), paddings, self.ssa2mhch_matrix
             )
@@ -250,7 +250,7 @@ class CMHCH(Network):
                 self.dial_position_weights, -1
             )
 
-            paddings = tf.ones_like(self.mhch2ssa_matrix) * (-(2**32) + 1)
+            paddings = tf.ones_like(self.mhch2ssa_matrix) * (-(2 ** 32) + 1)
             self.mhch2ssa_matrix_dia_masked = tf.where(
                 tf.equal(self.dia_att_mask, 0), paddings, self.mhch2ssa_matrix
             )
@@ -309,7 +309,7 @@ class CMHCH(Network):
             v_ssa = tf.tanh(tf.matmul(self.ssa_ff_customer, w_ssa) + b_ssa)
             # [B, T]
             self.vu_ssa = tf.tensordot(v_ssa, u_ssa, axes=1, name="vu")
-            paddings = tf.ones_like(self.vu_ssa) * (-(2**32) + 1)
+            paddings = tf.ones_like(self.vu_ssa) * (-(2 ** 32) + 1)
             # sequence mask
             self.vu_ssa_masked = tf.where(
                 tf.equal(self.dia_seq_mask, 0), paddings, self.vu_ssa

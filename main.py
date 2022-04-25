@@ -45,7 +45,9 @@ def main():
         "--memory", default="0.", help="Memory: The gpu memory you will use."
     )
     parser.add_argument(
-        "--batch_size", default="128", help="Batch size: The size of each batch of data."
+        "--batch_size",
+        default="128",
+        help="Batch size: The size of each batch of data.",
     )
     parser.add_argument("--gpu", default="0", help="GPU: Which gpu you will use.")
     parser.add_argument(

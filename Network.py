@@ -185,7 +185,7 @@ class Network(object):
         self._inference()
         self._compute_loss()
         self._create_train_op()
-        self.saver = tf.compat.v1.train.Saver()
+        self.saver = tf.compat.v1.train.Saver(max_to_keep=10000)
 
         # self.logger.info('Time to build graph: {} s'.format(time.time() - start_t))
         # print_trainable_variables(output_detail=True, logger=self.logger)
@@ -475,7 +475,7 @@ class Network(object):
             outputs = tf.matmul(Q, tf.transpose(K, [0, 2, 1]))  # (N, T_q, T_k)
 
             # scale
-            outputs /= d_k**0.5
+            outputs /= d_k ** 0.5
 
             # causality or future blinding masking
             if causality:
@@ -518,7 +518,7 @@ class Network(object):
            [[ 0.0000000e+00, -4.2949673e+09, -4.2949673e+09],
             [ 0.0000000e+00, -4.2949673e+09, -4.2949673e+09]]], dtype=float32)
         """
-        padding_num = -(2**32) + 1
+        padding_num = -(2 ** 32) + 1
         if type in ("k", "key", "keys"):
             key_masks = tf.to_float(key_masks)
             key_masks = tf.tile(
@@ -904,7 +904,6 @@ class Network(object):
                 except ValueError as e:
                     self.logger.info("Wrong batch.{}".format(e))
 
-
             total_handoff_flat = np.concatenate(total_handoff)
             total_pre_handoff_flat = np.concatenate(total_pre_handoff)
             # handoff
@@ -1029,13 +1028,13 @@ class Network(object):
                     max_val = metrics_dict["total_macro"]
                     self.save(self.save_dir + "best", "cmhch")
                     print("Saved!")
-            
+
             if is_save and (epoch + 1) % save_frequency == 0:
                 if os.path.exists(self.save_dir + str(epoch)):
                     shutil.rmtree(self.save_dir + str(epoch))
                 os.makedirs(self.save_dir + str(epoch))
                 self.save(self.save_dir + str(epoch), "cmhch")
-        
+
         if is_test:
             self.restore(self.save_dir + "best", "cmhch")
             self.evaluate_batch_cmhch(
