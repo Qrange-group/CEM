@@ -263,6 +263,9 @@ class CMHCH(Network):
 
         with tf.name_scope("ssa_context"):
             with tf.variable_scope("ssa_context_encoding"):
+                # tranformer_encoder
+                # self.ssa_context_customer.shape (?, 50, 256)
+                # self.mhch2ssa_final_vec.shape (?, 50, 256)
                 self.ssa_context_customer = self.multihead_attention(
                     queries=self.mhch2ssa_final_vec,
                     keys=self.mhch2ssa_final_vec,
@@ -272,6 +275,8 @@ class CMHCH(Network):
                     num_heads=self.num_heads,
                     dropout_rate=1 - self.dropout_keep_prob,
                 )
+                # self.ssa_context_customer = self.mhch2ssa_final_vec
+
                 # [B, T, Dense_dim]
                 self.ssa_ff_customer = self.ff(
                     self.ssa_context_customer, num_units=[self.ff_dim, self.dense_dim]
@@ -327,17 +332,29 @@ class CMHCH(Network):
             )
             self.senti_logits = self.ssa_ff_customer_distri
             self.score_logits = self.ssa_combine_vec
+            # self.senti_logits.shape (?, 50, 3)
+            # self.score_logits.shape (?, 3)
             if not self.is_only_cf:
-                self.main_logits = self.main_logits * tf.expand_dims(
-                    tf.concat(
-                        [
-                            tf.expand_dims(self.score_logits[:, 0], axis=-1),
-                            tf.expand_dims(self.score_logits[:, 2], axis=-1),
-                        ],
-                        -1,
-                    ),
-                    1,
-                )
+                # self.main_logits.shape (?, 50, 2)
+                if self.weigth_way == 'score':
+                    self.main_logits = self.main_logits * tf.expand_dims(
+                        tf.concat(
+                            [
+                                tf.expand_dims(self.score_logits[:, 0], axis=-1),
+                                tf.expand_dims(self.score_logits[:, 2], axis=-1),
+                            ],
+                            -1,
+                        ),
+                        1,
+                    )
+                else:
+                    self.main_logits = self.main_logits * tf.concat(
+                            [
+                                tf.expand_dims(self.senti_logits[:, :, 0], axis=-1),
+                                tf.expand_dims(self.senti_logits[:, :, 2], axis=-1),
+                            ],
+                            -1,
+                        )
 
             # [B, T]
             self.output = tf.argmax(self.main_logits, axis=-1)
@@ -386,22 +403,30 @@ class CMHCH(Network):
             self.dia_len, tf.float32
         )
         self.main_loss = tf.reduce_mean(self.scale_cross_entropy)
+        
+        if self.add_senti_loss:
+            self.senti_loss = tf.reduce_mean(
+                -tf.reduce_sum(self.senti_y * tf.math.log(self.senti_logits + 1e-9), -1)
+            )
+        else: 
+            self.senti_loss = 0
+
+        if self.is_only_ssa:
+            self.cost_loss_simulator = 0
+        else:
+            self.cost_loss_simulator = tf.reduce_mean(self.main_logits[:, 1])
 
         self.score_loss = tf.reduce_mean(
             -tf.reduce_sum(self.score_y * tf.math.log(self.score_logits + 1e-9), -1), -1
         )
 
-        self.cost_loss_simulator = tf.reduce_mean(self.main_logits[:, 1])
-
         # Combine loss
-        if self.is_only_ssa:
-            self.loss = self.main_loss + self.loss_lambda * self.score_loss
-        else:
-            self.loss = (
-                self.main_loss
-                + self.loss_lambda * self.score_loss
-                + 0.01 * self.cost_loss_simulator
-            )
+        self.loss = (
+            self.main_loss
+            + self.loss_lambda * self.score_loss
+            + self.loss_lambda * self.senti_loss
+            + 0.01 * self.cost_loss_simulator
+        )
         self.loss_pre = tf.reduce_mean(
             tf.square(self.main_logits[:, 1] - self.main_y[:, 1])
         )

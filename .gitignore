@@ -1,6 +1,4 @@
 /__pycache__
-*.pyc
-*.ipynb
 /.vscode
 /.idea
 /logs

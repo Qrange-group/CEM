@@ -90,15 +90,18 @@ CUDA_VISIBLE_DEVICES=0,3 nohup python -u -W ignore main.py --task train --model 
 
 CUDA_VISIBLE_DEVICES=1,3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --is_only_cf 1 --info only_cf > ./logs/makeup_only_cf.log 2>&1 &
 
-CUDA_VISIBLE_DEVICES=1,2,3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info tune_GPU > ./logs/makeup.log 2>&1 &
+CUDA_VISIBLE_DEVICES=3,0 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info add_senti_loss --batch_size 64 > ./logs/makeup_add_senti_loss.log 2>&1 &
+
+CUDA_VISIBLE_DEVICES=0 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --batch_size 64 --info batch_size_64_0 > ./logs/makeup_batch_size_64_0.log 2>&1 &
 
 --memory 0.9
+--batch_size 64
 ```
 kill -9 `ps -ef | grep CMHCH/main | awk '{print $2}'`
 
 - Test the model
 
 ```bash
-nohup python -u -W ignore main.py --task test --model cmhch --data clothes --info test --model_path /home/user02/zss/robot/CMHCH/weights/clothes/cmhch.ordinary.total_epoch80.pre_epoch20/best > ./logs/test.log 2>&1 &
+nohup python -u -W ignore main.py --task test --model cmhch --data clothes --info test --model_path /data1/user02/zss/CMHCH/nor_weights/clothes/cmhch.ordinary.total_epoch80.pre_epoch20/best > ./logs/test.log 2>&1 &
 
 ```

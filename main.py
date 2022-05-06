@@ -78,6 +78,16 @@ def main():
         default="0",
         help="ablation study for satisfaction.",
     )
+    parser.add_argument(
+        "--weight_way",
+        default="score",
+        help="the weight use to fine-tune based on user satisfaction.",
+    )
+    parser.add_argument(
+        "--add_senti_loss",
+        default="0",
+        help="whether add senti in loss function.",
+    )
     args = parser.parse_args()
 
     now_time = time.strftime("%Y.%m.%d", time.localtime())
@@ -159,12 +169,15 @@ def main():
     if args.model == "cmhch":
         is_only_cf = True if args.is_only_cf == 1 else False
         is_only_ssa = True if args.is_only_ssa == 1 else False
+        add_senti_loss = True if args.add_senti_loss == 1 else False
         network = CMHCH(
             memory=memory,
             vocab=vocab,
             config_dict=model_config,
             is_only_cf=is_only_cf,
             is_only_ssa=is_only_ssa,
+            weight_way=args.weight_way,
+            add_senti_loss=add_senti_loss,
             batch_size=args.batch_size
         )
     else:
