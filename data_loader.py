@@ -27,7 +27,7 @@ from keras.utils import to_categorical
 
 class DataLoader(object):
     def __init__(
-        self, task="train", data="normal", use_pre_train=False, embed_size=200
+        self, task="train", data="normal", embed_size=200
     ):
         """
         Constant variable declaration and configuration.
@@ -48,8 +48,6 @@ class DataLoader(object):
         self.train_path = curdir + dataset_folder_name + "/train.pkl"
         self.val_path = curdir + dataset_folder_name + "/eval.pkl"
         self.test_path = curdir + dataset_folder_name + "/test.pkl"
-
-        self.use_pre_train = use_pre_train
         self.embed_size = embed_size
 
         self.dialogues_list = []
@@ -293,16 +291,10 @@ if __name__ == "__main__":
         type=str,
         help="form: save the split data into what file type.",
     )
-    parser.add_argument(
-        "--use_pretrain",
-        default=True,
-        type=bool,
-        help="Whether to use pretrained embeddings.",
-    )
     args = parser.parse_args()
 
     data_loader = DataLoader(
-        task=args.task, data=args.data, use_pre_train=args.use_pretrain
+        task=args.task, data=args.data
     )
 
     if args.phase == "test_load":

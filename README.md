@@ -92,7 +92,11 @@ CUDA_VISIBLE_DEVICES=1,3 nohup python -u -W ignore main.py --task train --model 
 
 CUDA_VISIBLE_DEVICES=3,0 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info add_senti_loss --batch_size 64 > ./logs/makeup_add_senti_loss.log 2>&1 &
 
-CUDA_VISIBLE_DEVICES=0 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --batch_size 64 --info batch_size_64_0 > ./logs/makeup_batch_size_64_0.log 2>&1 &
+CUDA_VISIBLE_DEVICES=0 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info tune > ./logs/makeup_tune.log 2>&1 &
+CUDA_VISIBLE_DEVICES=0 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 0 > ./logs/clothes_0.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 1 > ./logs/clothes_1.log 2>&1 &
+CUDA_VISIBLE_DEVICES=2 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 2 > ./logs/clothes_2.log 2>&1 &
+CUDA_VISIBLE_DEVICES=3 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 3 > ./logs/clothes_3.log 2>&1 &
 
 --memory 0.9
 --batch_size 64
@@ -102,6 +106,9 @@ kill -9 `ps -ef | grep CMHCH/main | awk '{print $2}'`
 - Test the model
 
 ```bash
-nohup python -u -W ignore main.py --task test --model cmhch --data clothes --info test --model_path /data1/user02/zss/CMHCH/nor_weights/clothes/cmhch.ordinary.total_epoch80.pre_epoch20/best > ./logs/test.log 2>&1 &
+nohup python -u -W ignore main.py --task test --model cmhch --data clothes --info test --model_path /data1/user02/zss/CMHCH/nor_weights/clothes/cmhch.ordinary.total_epoch80.pre_epoch20/best > ./logs/test_clothes.log 2>&1 &
 
+nohup python -u -W ignore main.py --task test --model cmhch --data makeup --info test --model_path /data1/user02/zss/CMHCH/nor_weights/makeup/cmhch.tune.total_epoch80.pre_epoch20/best > ./logs/test_makeup.log 2>&1 &
 ```
+根据统计，1表示切换人工，0表示不切换人工
+

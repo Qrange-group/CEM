@@ -33,59 +33,69 @@ def main():
     parser.add_argument(
         "--task",
         default="train",
+        type=str,
         help="Task: Can be train or test, the default value is train.",
     )
     parser.add_argument(
-        "--data", default="clothes", help="Data: The data you will use."
+        "--data", default="clothes", type=str, help="Data: The data you will use."
     )
     parser.add_argument(
-        "--model_path", default="none", help="Model_Path: The model path you will load."
+        "--model_path", type=str, help="Model_Path: The model path you will load."
     )
     parser.add_argument(
-        "--memory", default="0.", help="Memory: The gpu memory you will use."
+        "--memory", default=0.0, type=float, help="Memory: The gpu memory you will use."
     )
     parser.add_argument(
         "--batch_size",
-        default="128",
+        default="64",
+        type=int, 
         help="Batch size: The size of each batch of data.",
     )
-    parser.add_argument("--gpu", default="0", help="GPU: Which gpu you will use.")
+    parser.add_argument("--gpu", default=0, type=int, help="GPU: Which gpu you will use.")
     parser.add_argument(
         "--log_path",
         default="./logs/",
+        type=str, 
         help="path of the log file.",
     )
     parser.add_argument(
         "--model",
         default="cmhch",
+        type=str, 
         help="decide use what kind of model.",
     )
+    # parser.add_argument(
+    #     "--use_pretrain",
+    #     default=False,
+    #     type=bool, 
+    #     help="whether to use supervised method or position or deal.",
+    # )
     parser.add_argument(
-        "--use_pretrain",
-        default="1",
-        help="whether to use supervised method or position or deal.",
-    )
-    parser.add_argument(
-        "--info", default="ordinary", help="information about model training."
+        "--info", default="ordinary", type=str, help="information about model training."
     )
     parser.add_argument(
         "--is_only_cf",
-        default="0",
+        default=False,
+        type=bool, 
         help="ablation study for counterfactual.",
     )
     parser.add_argument(
         "--is_only_ssa",
-        default="0",
+        default=False,
+        type=bool, 
         help="ablation study for satisfaction.",
     )
     parser.add_argument(
         "--weight_way",
-        default="score",
+        default="senti",
+        type=str, 
+        choices=['senti','score'],
         help="the weight use to fine-tune based on user satisfaction.",
     )
     parser.add_argument(
         "--add_senti_loss",
-        default="0",
+        default=True,
+        type=bool,
         help="whether add senti in loss function.",
     )
     args = parser.parse_args()
@@ -124,9 +134,8 @@ def main():
     logger.info("Running with args : {}".format(args))
 
     # get object named data_loader
-    use_pre_train = 1 if args.use_pretrain == "1" else 0
 
-    data_prepare = DataLoader(data=args.data, use_pre_train=use_pre_train)
+    data_prepare = DataLoader(data=args.data)
 
     # Get config from file
     logger.info("Load dataset and vocab...")
@@ -156,7 +165,7 @@ def main():
 
     vocab_path = curdir + "/data/" + args.data + "/vocab.pkl"
 
-    memory = float(args.memory)
+    memory = args.memory
     logger.info(
         "Memory in train %s. If Memory == 0, gpu_options.allow_growth = True." % memory
     )
@@ -167,17 +176,14 @@ def main():
 
     # Get Network Framework
     if args.model == "cmhch":
-        is_only_cf = True if args.is_only_cf == 1 else False
-        is_only_ssa = True if args.is_only_ssa == 1 else False
-        add_senti_loss = True if args.add_senti_loss == 1 else False
         network = CMHCH(
             memory=memory,
             vocab=vocab,
             config_dict=model_config,
-            is_only_cf=is_only_cf,
-            is_only_ssa=is_only_ssa,
+            is_only_cf=args.is_only_cf,
+            is_only_ssa=args.is_only_ssa,
             weight_way=args.weight_way,
-            add_senti_loss=add_senti_loss,
+            add_senti_loss=args.add_senti_loss,
             batch_size=args.batch_size
         )
     else:

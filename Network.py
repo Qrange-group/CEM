@@ -1138,9 +1138,17 @@ class Network(object):
             except ValueError as e:
                 self.logger.info("Wrong batch.{}".format(e))
 
-        total_handoff_flat = np.concatenate(total_handoff)
+        total_handoff_flat = np.concatenate(total_handoff)   # 将一系列 0/1 label array 压平到一维的 numpy 中
         total_pre_handoff_flat = np.concatenate(total_pre_handoff)
         total_pre_handoff_scores_flat = np.concatenate(total_pre_handoff_scores)
+        
+        # cost
+        diff = total_handoff_flat - total_pre_handoff_flat  # 1-0=1 cost=0, 0-1=-1 cost=1
+        print("Cost %s num: %s\tError num: %s" % (task, len(diff), np.count_nonzero(diff)))
+        diff[diff == 1] = 0
+        diff[diff == -1] = 1
+        print("Error cost: ", diff.sum())
+        
         # handoff
         gtt_1, gtt_2, gtt_3 = get_gtt_score(
             total_handoff, total_pre_handoff, lamb=self.lamb
