@@ -141,6 +141,7 @@ class Network(object):
         self.lr = model_config["learning_rate"]
         self.weight_decay = model_config["weight_decay"]
         self.l2_reg_lambda = model_config["l2_reg_lambda"]
+        self.pre_epoch = model_config["pre_epoch"]
         self.logger.info("set from model_config.")
 
     def set_from_data_config(self, data_config):
@@ -841,7 +842,8 @@ class Network(object):
                     self.dropout_keep_prob: keep_prob,
                 }
                 try:
-                    if (not self.is_only_ssa) and epoch < 20:
+                    if (not self.is_only_ssa) and epoch < 40:
+                        self.logger.info("Pre Train")
                         (
                             _,
                             step,
@@ -863,6 +865,7 @@ class Network(object):
                             feed_dict,
                         )
                     else:
+                        self.logger.info("Train")
                         (
                             _,
                             step,
@@ -909,7 +912,6 @@ class Network(object):
                     counter += 1
                 except ValueError as e:
                     self.logger.info("Wrong batch.{}".format(e))
-
             total_handoff_flat = np.concatenate(total_handoff)
             total_pre_handoff_flat = np.concatenate(total_pre_handoff)
             # handoff
@@ -1034,7 +1036,9 @@ class Network(object):
                     max_val = metrics_dict["total_macro"]
                     self.save(self.save_dir + "best", "cmhch")
                     print("Saved!")
-
+            self.logger.info(str(total_loss))
+            self.logger.info(str(eval_loss))
+            
             if is_save and (epoch + 1) % save_frequency == 0:
                 if os.path.exists(self.save_dir + str(epoch)):
                     shutil.rmtree(self.save_dir + str(epoch))

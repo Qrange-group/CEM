@@ -21,8 +21,8 @@
     "loss_lambda": 0.3,
 
     "optimizer": "adam",
-    "total_epoch": 80,
-    "pre_epoch": 20,
+    "total_epoch": 120,
+    "pre_epoch": 40,
 
     "is_val": 1,
     "is_test": 1,

@@ -98,6 +98,11 @@ CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --task train --model cm
 CUDA_VISIBLE_DEVICES=2 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 2 > ./logs/clothes_2.log 2>&1 &
 CUDA_VISIBLE_DEVICES=3 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 3 > ./logs/clothes_3.log 2>&1 &
 
+
+
+CUDA_VISIBLE_DEVICES=3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info pre_epoch > ./logs/makeup_pre_epoch.log 2>&1 &
+CUDA_VISIBLE_DEVICES=2 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info pre_epoch > ./logs/clothes_pre_epoch.log 2>&1 &
+
 --memory 0.9
 --batch_size 64
 ```

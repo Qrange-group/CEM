@@ -425,7 +425,7 @@ class CMHCH(Network):
             self.main_loss
             + self.loss_lambda * self.score_loss
             + self.loss_lambda * self.senti_loss
-            + self.loss_lambda * self.cost_loss_simulator
+            + 0.01 * self.cost_loss_simulator
         )
         self.loss_pre = tf.reduce_mean(
             tf.square(self.main_logits[:, 1] - self.main_y[:, 1])
