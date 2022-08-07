@@ -842,7 +842,7 @@ class Network(object):
                     self.dropout_keep_prob: keep_prob,
                 }
                 try:
-                    if (not self.is_only_ssa) and epoch < 40:
+                    if (not self.is_only_ssa) and epoch < self.pre_epoch:
                         self.logger.info("Pre Train")
                         (
                             _,

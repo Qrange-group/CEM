@@ -86,9 +86,13 @@ CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --task train --model cm
 --batch_size 64 
 # makeup
 
-CUDA_VISIBLE_DEVICES=0,3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --is_only_ssa 1 --info only_ssa > ./logs/makeup_only_ssa.log 2>&1 &
+CUDA_VISIBLE_DEVICES=0 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --is_only_ssa 1 --info only_ssa > ./logs/clothes_only_ssa_2.log 2>&1 &
 
-CUDA_VISIBLE_DEVICES=1,3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --is_only_cf 1 --info only_cf > ./logs/makeup_only_cf.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --is_only_cf 1 --info only_cf > ./logs/clothes_only_cf_2.log 2>&1 &
+
+CUDA_VISIBLE_DEVICES=2 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --is_only_ssa 1 --info only_ssa > ./logs/clothes_only_ssa_1.log 2>&1 &
+
+CUDA_VISIBLE_DEVICES=3 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --is_only_cf 1 --info only_cf > ./logs/clothes_only_cf_1.log 2>&1 &
 
 CUDA_VISIBLE_DEVICES=3,0 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info add_senti_loss --batch_size 64 > ./logs/makeup_add_senti_loss.log 2>&1 &
 
@@ -98,7 +102,10 @@ CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --task train --model cm
 CUDA_VISIBLE_DEVICES=2 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 2 > ./logs/clothes_2.log 2>&1 &
 CUDA_VISIBLE_DEVICES=3 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info 3 > ./logs/clothes_3.log 2>&1 &
 
-
+CUDA_VISIBLE_DEVICES=0 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info 0 > ./logs/makeup_0.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info 1 > ./logs/makeup_1.log 2>&1 &
+CUDA_VISIBLE_DEVICES=2 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info 2 > ./logs/makeup_2.log 2>&1 &
+CUDA_VISIBLE_DEVICES=3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info 3 > ./logs/makeup_3.log 2>&1 &
 
 CUDA_VISIBLE_DEVICES=3 nohup python -u -W ignore main.py --task train --model cmhch --data makeup --info pre_epoch > ./logs/makeup_pre_epoch.log 2>&1 &
 CUDA_VISIBLE_DEVICES=2 nohup python -u -W ignore main.py --task train --model cmhch --data clothes --info pre_epoch > ./logs/clothes_pre_epoch.log 2>&1 &
