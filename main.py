@@ -188,9 +188,7 @@ def main():
         )
 
     if args.task == "test" and args.model_path == None:
-        raise ValueError(
-            "Please input the model path you want to evaluate. "
-        )
+        raise ValueError("Please input the model path you want to evaluate. ")
 
     # Set param for network
     network.set_nb_words(min(vocab.size(), data_config["nb_words"]) + 1)
