@@ -31,19 +31,18 @@ Our experiments are conducted based on two publicly available Chinese customer s
 
 ```bash
 python -u -W ignore main.py --task train --model cem --data makeup2
-
 ```
 
 - Test the model
 
 ```bash
 python -u -W ignore main.py --task test --model cem --data makeup2 --model_path pretrained_model_dir
-
 ```
 
-## Citing SPENet
+## Citation
 
 ```
+???
 ```
 
 ## Acknowledgments
