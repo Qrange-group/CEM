@@ -41,3 +41,11 @@ python -u -W ignore main.py --task test --model cem --data makeup2 --model_path 
 
 ```
 
+## Citing SPENet
+
+```
+```
+
+## Acknowledgments
+
+Many thanks to [LauJames](https://github.com/LauJames) for [his Tensorflow framework](https://github.com/LauJames/RSSN) for MHCH task.
