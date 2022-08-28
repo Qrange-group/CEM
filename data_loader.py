@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import os
 import sys
 import json
 import argparse
 import pickle as pkl
-import jieba
 import random
-import copy
 from tqdm import tqdm
-import numpy as np
 
 curdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, curdir)
@@ -26,9 +22,7 @@ from keras.utils import to_categorical
 
 
 class DataLoader(object):
-    def __init__(
-        self, task="train", data="normal", embed_size=200
-    ):
+    def __init__(self, task="train", data="normal", embed_size=200):
         """
         Constant variable declaration and configuration.
         """
@@ -37,11 +31,10 @@ class DataLoader(object):
 
         if data == "clothes":
             dataset_folder_name = "/data" + "/clothes"
-
-        elif data == "makeup":
-            dataset_folder_name = "/data" + "/makeup"
-
+        elif data == "makeup2":
+            dataset_folder_name = "/data" + "/makeup2"
         else:
+            print(data)
             raise ValueError("Please confirm the correct data task you entered.")
 
         self.vocab_save_path = curdir + dataset_folder_name + "/vocab.pkl"
@@ -65,7 +58,7 @@ class DataLoader(object):
         self.task = task
 
     def load_pkl_data(self, task="train"):
-        if task == "train" or task == "counterfactual":
+        if task == "train":
             load_path = self.train_path
         elif task == "eval":
             load_path = self.val_path
@@ -92,71 +85,6 @@ class DataLoader(object):
                 # auxiliary y
                 self.senti_list = pkl.load(fin)
                 self.score_list = pkl.load(fin)
-
-                # counterfactual sampling
-                if task == "counterfactual":
-                    import pandas as pd
-
-                    data = pd.DataFrame()
-                    data["dialogues_len_list"] = self.dialogues_len_list
-                    data["dialogues_ids_list"] = self.dialogues_ids_list
-                    data["dialogues_sent_len_list"] = self.dialogues_sent_len_list
-                    data["session_id_list"] = self.session_id_list
-                    data["role_list"] = self.role_list
-                    data["handoff_list"] = self.handoff_list
-                    data["senti_list"] = self.senti_list
-                    data["score_list"] = self.score_list
-
-                    sample_num = int(len(self.dialogues_len_list) * 0.8)
-                    # select top 20% of dialogue length and score is negative
-                    data = data.sort_values("dialogues_len_list")[
-                        sample_num:
-                    ].reset_index(drop=True)
-                    data = data[data["score_list"] == 0]
-
-                    self.dialogues_ids_list = []
-                    self.dialogues_len_list = []
-                    self.dialogues_sent_len_list = []
-                    self.session_id_list = []
-                    self.senti_list = []
-                    self.handoff_list = []
-                    self.score_list = []
-                    self.role_list = []
-
-                    self.dialogues_ids_list.extend(
-                        data["dialogues_ids_list"].values.tolist()
-                    )
-                    self.dialogues_sent_len_list.extend(
-                        data["dialogues_sent_len_list"].values.tolist()
-                    )
-                    self.dialogues_len_list.extend(
-                        data["dialogues_len_list"].values.tolist()
-                    )
-                    self.session_id_list.extend(data["session_id_list"].values.tolist())
-                    self.role_list.extend(data["role_list"].values.tolist())
-                    self.handoff_list.extend(data["handoff_list"].values.tolist())
-                    self.senti_list.extend(data["senti_list"].values.tolist())
-                    self.score_list.extend(data["score_list"].values.tolist())
-
-                    # make this part's label be chatbot
-                    for i in range(len(self.handoff_list)):
-                        list_pack = list(
-                            zip(
-                                self.dialogues_ids_list[i],
-                                self.dialogues_sent_len_list[i],
-                                self.role_list[i],
-                                self.handoff_list[i],
-                                self.senti_list[i],
-                            )
-                        )
-                        random.shuffle(list_pack)
-                        (
-                            self.dialogues_ids_list[i],
-                            self.dialogues_sent_len_list[i],
-                            self.role_list[i],
-                            self.handoff_list[i],
-                            self.senti_list[i],
-                        ) = zip(*list_pack)
 
             print("Load variable from {} successfully!".format(load_path))
 
@@ -293,9 +221,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    data_loader = DataLoader(
-        task=args.task, data=args.data
-    )
+    data_loader = DataLoader(task=args.task, data=args.data)
 
     if args.phase == "test_load":
         pass

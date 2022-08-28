@@ -60,7 +60,7 @@ class Network(object):
         batch_size=128,
         is_only_ssa=False,
         is_only_cf=False,
-        weigth_way='score',
+        weigth_way="score",
         add_senti_loss=False,
         **kwargs
     ):
@@ -156,7 +156,6 @@ class Network(object):
         if os.path.exists(self.save_dir):
             shutil.rmtree(self.save_dir)
         os.makedirs(self.save_dir)
-        os.makedirs(self.save_dir + "best")
 
         self.tensorboard_dir = (
             curdir + "/tensorboard_dir/" + self.data + "/" + self.model_name + "/"
@@ -193,17 +192,6 @@ class Network(object):
         self._compute_loss()
         self._create_train_op()
         self.saver = tf.compat.v1.train.Saver(max_to_keep=10000)
-
-        # self.logger.info('Time to build graph: {} s'.format(time.time() - start_t))
-        # print_trainable_variables(output_detail=True, logger=self.logger)
-        # param_num = sum([np.prod(self.sess.run(tf.shape(v))) for v in self.all_params])
-        # self.logger.info('There are {} parameters in the models'.format(param_num))
-        # embedding_param_num = sum([np.prod(self.sess.run(tf.shape(v)))
-        #                            for v in self.all_params if 'word_embedding' in v.name or 'weights' in v.name])
-        # self.logger.info('There are {} parameters in the models for word embedding'.format(embedding_param_num))
-        # pure_param_num = sum([np.prod(self.sess.run(tf.shape(v)))
-        #                       for v in self.all_params if 'word_embedding' not in v.name and 'weights' not in v.name])
-        # self.logger.info('There are {} parameters in the models without word embedding'.format(pure_param_num))
 
         # initialize the models
         self.sess.run(tf.compat.v1.global_variables_initializer())
@@ -482,7 +470,7 @@ class Network(object):
             outputs = tf.matmul(Q, tf.transpose(K, [0, 2, 1]))  # (N, T_q, T_k)
 
             # scale
-            outputs /= d_k ** 0.5
+            outputs /= d_k**0.5
 
             # causality or future blinding masking
             if causality:
@@ -525,7 +513,7 @@ class Network(object):
            [[ 0.0000000e+00, -4.2949673e+09, -4.2949673e+09],
             [ 0.0000000e+00, -4.2949673e+09, -4.2949673e+09]]], dtype=float32)
         """
-        padding_num = -(2 ** 32) + 1
+        padding_num = -(2**32) + 1
         if type in ("k", "key", "keys"):
             key_masks = tf.to_float(key_masks)
             key_masks = tf.tile(
@@ -779,7 +767,7 @@ class Network(object):
         )
         builder.save()
 
-    def train_cmhch(
+    def train_cem(
         self,
         data_generator,
         keep_prob,
@@ -798,7 +786,7 @@ class Network(object):
         test_task="test",
     ):
 
-        print("Using cmhch trainer.")
+        print("Using cem trainer.")
         max_val = 0
 
         for epoch in range(epochs):
@@ -954,57 +942,16 @@ class Network(object):
                 )
             )
 
-            # satisfaction score
-            score_list = np.concatenate(score_list)
-            pre_score_list = np.concatenate(pre_score_list)
-
-            ssa_acc = accuracy_score(score_list, pre_score_list)
-            ssa_macro_f1 = f1_score(score_list, pre_score_list, average="macro")
-            ssa_f1_0, ssa_f1_1, ssa_f1_2 = f1_score(
-                score_list, pre_score_list, labels=[0, 1, 2], average=None
-            )
-
-            print(confusion_matrix(score_list, pre_score_list))
-            print(
-                "SSA %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-                % (
-                    task,
-                    total_loss / float(counter),
-                    ssa_f1_2,
-                    ssa_f1_1,
-                    ssa_f1_0,
-                    ssa_macro_f1,
-                    ssa_acc,
-                )
-            )
-            self.logger.info(
-                "SSA %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-                % (
-                    task,
-                    total_loss / float(counter),
-                    ssa_f1_2,
-                    ssa_f1_1,
-                    ssa_f1_0,
-                    ssa_macro_f1,
-                    ssa_acc,
-                )
-            )
-
             if is_val:
                 (
                     eval_loss,
                     eval_f1_handoff,
                     eval_macro_handoff,
                     eval_auc,
-                    gs1,
-                    gs2,
-                    gs3,
-                    eval_f1_2_ssa,
-                    eval_f1_1_ssa,
-                    eval_f1_0_ssa,
-                    eval_macro_ssa,
-                    eval_acc_ssa,
-                ) = self.evaluate_batch_cmhch(
+                    gt1,
+                    gt2,
+                    gt3,
+                ) = self.evaluate_batch_cem(
                     data_generator,
                     data,
                     task=val_task,
@@ -1013,41 +960,30 @@ class Network(object):
                     nb_classes=nb_classes,
                     shuffle=False,
                 )
-                total_macro = eval_macro_handoff + eval_macro_ssa
-                total_metrices = eval_macro_handoff + gs3 + eval_macro_ssa
+                total_macro = eval_macro_handoff
+                total_metrices = eval_macro_handoff + gt3
                 metrics_dict = {
                     "loss": eval_loss,
                     "f1_handoff": eval_f1_handoff,
                     "macro_handoff": eval_macro_handoff,
-                    "gs1": gs1,
-                    "gs2": gs2,
-                    "gs3": gs3,
-                    "acc_ssa": eval_acc_ssa,
-                    "macro_ssa": eval_macro_ssa,
-                    "f1_0_ssa": eval_f1_0_ssa,
-                    "f1_1_ssa": eval_f1_1_ssa,
-                    "f1_2_ssa": eval_f1_2_ssa,
+                    "gt1": gt1,
+                    "gt2": gt2,
+                    "gt3": gt3,
                     "total_macro": total_macro,
                     "total_metrices": total_metrices,
                 }
 
                 if metrics_dict["total_macro"] > max_val and save_best:
-                    shutil.rmtree(self.save_dir + "best")
+                    shutil.rmtree(self.save_dir)
                     max_val = metrics_dict["total_macro"]
-                    self.save(self.save_dir + "best", "cmhch")
+                    self.save(self.save_dir, "best")
                     print("Saved!")
             self.logger.info(str(total_loss))
             self.logger.info(str(eval_loss))
-            
-            if is_save and (epoch + 1) % save_frequency == 0:
-                if os.path.exists(self.save_dir + str(epoch)):
-                    shutil.rmtree(self.save_dir + str(epoch))
-                os.makedirs(self.save_dir + str(epoch))
-                self.save(self.save_dir + str(epoch), "cmhch")
 
         if is_test:
-            self.restore(self.save_dir + "best", "cmhch")
-            self.evaluate_batch_cmhch(
+            self.restore(self.save_dir, "best")
+            self.evaluate_batch_cem(
                 data_generator,
                 data,
                 task=test_task,
@@ -1060,7 +996,7 @@ class Network(object):
         self.summary_writer_train.close()
         self.summary_writer_eval.close()
 
-    def evaluate_batch_cmhch(
+    def evaluate_batch_cem(
         self,
         data_generator,
         data,
@@ -1142,17 +1078,21 @@ class Network(object):
             except ValueError as e:
                 self.logger.info("Wrong batch.{}".format(e))
 
-        total_handoff_flat = np.concatenate(total_handoff)   # 将一系列 0/1 label array 压平到一维的 numpy 中
+        total_handoff_flat = np.concatenate(total_handoff)
         total_pre_handoff_flat = np.concatenate(total_pre_handoff)
         total_pre_handoff_scores_flat = np.concatenate(total_pre_handoff_scores)
-        
+
         # cost
-        diff = total_handoff_flat - total_pre_handoff_flat  # 1-0=1 cost=0, 0-1=-1 cost=1
-        print("Cost %s num: %s\tError num: %s" % (task, len(diff), np.count_nonzero(diff)))
+        diff = (
+            total_handoff_flat - total_pre_handoff_flat
+        )  # 1-0=1 cost=0, 0-1=-1 cost=1
+        print(
+            "Cost %s num: %s\tError num: %s" % (task, len(diff), np.count_nonzero(diff))
+        )
         diff[diff == 1] = 0
         diff[diff == -1] = 1
         print("Error cost: ", diff.sum())
-        
+
         # handoff
         gtt_1, gtt_2, gtt_3 = get_gtt_score(
             total_handoff, total_pre_handoff, lamb=self.lamb
@@ -1192,52 +1132,6 @@ class Network(object):
             )
         )
 
-        # sentiment
-        total_senti_flat = total_senti
-        total_pre_senti_flat = total_pre_senti
-        senti_acc = accuracy_score(total_senti_flat, total_pre_senti_flat)
-        senti_macro_f1 = f1_score(
-            total_senti_flat, total_pre_senti_flat, average="macro"
-        )
-        senti_f1_0, senti_f1_1, senti_f1_2 = f1_score(
-            total_senti_flat, total_pre_senti_flat, labels=[0, 1, 2], average=None
-        )
-
-        # satisfaction score
-        score_list = np.concatenate(score_list)
-        pre_score_list = np.concatenate(pre_score_list)
-        ssa_acc = accuracy_score(score_list, pre_score_list)
-        ssa_macro_f1 = f1_score(score_list, pre_score_list, average="macro")
-        ssa_f1_0, ssa_f1_1, ssa_f1_2 = f1_score(
-            score_list, pre_score_list, labels=[0, 1, 2], average=None
-        )
-
-        print(confusion_matrix(score_list, pre_score_list))
-        print(
-            "SSA %s : Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-            % (
-                task,
-                total_loss / float(counter),
-                ssa_f1_2,
-                ssa_f1_1,
-                ssa_f1_0,
-                ssa_macro_f1,
-                ssa_acc,
-            )
-        )
-        self.logger.info(
-            "SSA %s : Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-            % (
-                task,
-                total_loss / float(counter),
-                ssa_f1_2,
-                ssa_f1_1,
-                ssa_f1_0,
-                ssa_macro_f1,
-                ssa_acc,
-            )
-        )
-
         if task == "test":
             self.logger.info(
                 "Handoff Test Metrics:\tF1Score\tMacro_F1Score\tAUC\tGT-I\tGT-II\tGT-III"
@@ -1255,97 +1149,6 @@ class Network(object):
             self.logger.info(
                 "\n" + str(confusion_matrix(total_handoff_flat, total_pre_handoff_flat))
             )
-
-            self.logger.info(
-                "Sentiment Test Metrics:\tPO F1\tNE F1\tNG F1\tMacro F1\tAcc."
-            )
-            self.logger.info(
-                "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
-                % (task, senti_f1_2, senti_f1_1, senti_f1_0, senti_macro_f1, senti_acc)
-            )
-            self.logger.info(
-                "\n"
-                + classification_report(
-                    total_senti_flat, total_pre_senti_flat, digits=4
-                )
-            )
-            self.logger.info(
-                "\n" + str(confusion_matrix(total_senti_flat, total_pre_senti_flat))
-            )
-
-            self.logger.info("SSA Test Metrics:\tWS F1\tF1\tUS F1\tMacro F1\tAcc.")
-            self.logger.info(
-                "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
-                % (task, ssa_f1_2, ssa_f1_1, ssa_f1_0, ssa_macro_f1, ssa_acc)
-            )
-            self.logger.info(
-                "\n" + classification_report(score_list, pre_score_list, digits=4)
-            )
-            self.logger.info("\n" + str(confusion_matrix(score_list, pre_score_list)))
-            tmp_lambda = 0.99
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.75
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.5
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.25
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.0
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.25
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.5
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.75
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.99
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_handoff, total_pre_handoff, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-
         else:
             val_summary = tf.compat.v1.Summary(
                 value=[
@@ -1353,7 +1156,7 @@ class Network(object):
                         tag="loss", simple_value=total_loss / float(counter)
                     ),
                     tf.compat.v1.Summary.Value(
-                        tag="metrics/score_acc", simple_value=ssa_acc
+                        tag="metrics/acc", simple_value=auc_score
                     ),
                     tf.compat.v1.Summary.Value(
                         tag="metrics/GT-III", simple_value=gtt_3 * 100
@@ -1370,14 +1173,9 @@ class Network(object):
             gtt_1,
             gtt_2,
             gtt_3,
-            ssa_f1_2,
-            ssa_f1_1,
-            ssa_f1_0,
-            ssa_macro_f1,
-            ssa_acc,
         )
 
-    def test_cmhch(
+    def test_cem(
         self,
         data_generator,
         data,
@@ -1386,8 +1184,8 @@ class Network(object):
         test_task="test",
         model_path="",
     ):
-        self.restore(model_path, "cmhch")
-        self.evaluate_batch_cmhch(
+        self.restore(model_path, "best")
+        self.evaluate_batch_cem(
             data_generator,
             data,
             task=test_task,
@@ -1396,563 +1194,6 @@ class Network(object):
             nb_classes=nb_classes,
             shuffle=False,
         )
-
-    def train_mhch(
-        self,
-        data_generator,
-        keep_prob,
-        epochs,
-        data,
-        task="train",
-        batch_size=20,
-        nb_classes=2,
-        shuffle=True,
-        is_val=True,
-        is_test=True,
-        save_best=True,
-        val_task="eval",
-        test_task="test",
-    ):
-
-        print("Using mhch classification trainer.")
-        max_val = 0
-
-        for epoch in range(epochs):
-            self.logger.info(
-                "Training the models for epoch {} with batch size {}".format(
-                    epoch, batch_size
-                )
-            )
-            print("Training Epoch: {}".format(epoch))
-            counter, total_loss = 0.0, 0.0
-            total_label = []
-            total_pre_label = []
-            total_pre_scores = []
-
-            for (
-                batch_dialog_ids,
-                batch_sent_len,
-                batch_dia_len,
-                batch_ids,
-                batch_role_ids,
-                batch_handoff,
-                batch_senti,
-                batch_score,
-            ) in data_generator(
-                task=task,
-                batch_size=batch_size,
-                nb_classes=nb_classes,
-                shuffle=shuffle,
-                epoch=epoch,
-            ):
-                feed_dict = {
-                    self.input_x1: batch_dialog_ids,
-                    self.role_list: batch_role_ids,
-                    self.dia_len: batch_dia_len,
-                    self.sent_len: batch_sent_len,
-                    self.main_y: batch_handoff,
-                    self.dropout_keep_prob: keep_prob,
-                }
-                try:
-                    _, step, loss, output, scores = self.sess.run(
-                        [
-                            self.train_op,
-                            self.global_step,
-                            self.loss,
-                            self.output,
-                            self.proba,
-                        ],
-                        feed_dict,
-                    )
-                    # for handoff metric
-                    true_y = np.argmax(batch_handoff, -1)
-                    for batch_id in range(len(batch_dia_len)):
-                        total_label.append(true_y[batch_id, : batch_dia_len[batch_id]])
-                        total_pre_label.append(
-                            output[batch_id, : batch_dia_len[batch_id]]
-                        )
-                        total_pre_scores.append(
-                            scores[batch_id, : batch_dia_len[batch_id], 1]
-                        )
-
-                    total_loss += loss
-                    counter += 1
-
-                except ValueError as e:
-                    self.logger.info("Wrong batch.{}".format(e))
-
-            total_label_flat = np.concatenate(total_label)
-            total_pre_label_flat = np.concatenate(total_pre_label)
-
-            acc, p, r, f1, macro = get_a_p_r_f_sara(
-                target=total_label_flat, predict=total_pre_label_flat
-            )
-            print(confusion_matrix(total_label_flat, total_pre_label_flat))
-
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=self.lamb
-            )
-
-            print(
-                "MHCH Metrics %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
-                % (task, total_loss / float(counter), f1, macro, gtt_1, gtt_2, gtt_3)
-            )
-            self.logger.info(
-                "MHCH Metrics %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
-                % (task, total_loss / float(counter), f1, macro, gtt_1, gtt_2, gtt_3)
-            )
-
-            if is_val:
-                (
-                    eval_loss,
-                    eval_acc,
-                    eval_f1,
-                    eval_macro,
-                    eval_auc,
-                    gs1,
-                    gs2,
-                    gs3,
-                ) = self.evaluate_batch_mhch(
-                    data_generator,
-                    data,
-                    task=val_task,
-                    batch_size=batch_size,
-                    nb_classes=nb_classes,
-                    shuffle=False,
-                )
-
-                metrics_dict = {
-                    "loss": eval_loss,
-                    "acc": eval_acc,
-                    "f1": eval_f1,
-                    "macro": eval_macro,
-                    "gs1": gs1,
-                    "gs2": gs2,
-                    "gs3": gs3,
-                }
-                if metrics_dict["macro"] > max_val and save_best:
-                    max_val = metrics_dict["macro"]
-                    self.save(self.save_dir, self.model_name + ".best")
-                    print("Saved!")
-
-        self.save(self.save_dir, self.model_name + ".last")
-        if is_test:
-            self.restore(self.save_dir, self.model_name + ".best")
-            self.evaluate_batch_mhch(
-                data_generator,
-                data,
-                task=test_task,
-                batch_size=batch_size,
-                nb_classes=nb_classes,
-                shuffle=False,
-            )
-        self.summary_writer_train.close()
-        self.summary_writer_eval.close()
-
-    def evaluate_batch_mhch(
-        self,
-        data_generator,
-        data,
-        task="eval",
-        batch_size=32,
-        nb_classes=2,
-        shuffle=False,
-    ):
-        counter, total_loss = 0, 0.0
-        total_label = []
-        total_pre_label = []
-        total_pre_scores = []
-
-        for (
-            batch_dialog_ids,
-            batch_sent_len,
-            batch_dia_len,
-            batch_ids,
-            batch_role_ids,
-            batch_handoff,
-            batch_senti,
-            batch_score,
-        ) in data_generator(
-            task=task, batch_size=batch_size, nb_classes=nb_classes, shuffle=shuffle
-        ):
-
-            feed_dict = {
-                self.input_x1: batch_dialog_ids,
-                self.role_list: batch_role_ids,
-                self.dia_len: batch_dia_len,
-                self.sent_len: batch_sent_len,
-                self.main_y: batch_handoff,
-                self.dropout_keep_prob: 1.0,
-            }
-            try:
-                loss, output, probas = self.sess.run(
-                    [self.loss, self.output, self.proba], feed_dict
-                )
-                # for handoff metric
-                true_y = np.argmax(batch_handoff, -1)
-                for batch_id in range(len(batch_dia_len)):
-                    total_label.append(true_y[batch_id, : batch_dia_len[batch_id]])
-                    total_pre_label.append(output[batch_id, : batch_dia_len[batch_id]])
-                    total_pre_scores.append(
-                        probas[batch_id, : batch_dia_len[batch_id], 1]
-                    )
-
-                total_loss += loss
-                counter += 1
-
-            except ValueError as e:
-                self.logger.info("Wrong batch.{}".format(e))
-
-        total_label_flat = np.concatenate(total_label)
-        total_pre_label_flat = np.concatenate(total_pre_label)
-        total_pre_scores_flat = np.concatenate(total_pre_scores)
-
-        acc, p, r, f1, macro = get_a_p_r_f_sara(
-            target=total_label_flat, predict=total_pre_label_flat
-        )
-        print(confusion_matrix(total_label_flat, total_pre_label_flat))
-        gtt_1, gtt_2, gtt_3 = get_gtt_score(
-            total_label, total_pre_label, lamb=self.lamb
-        )
-
-        # calc AUC score
-        fpr, tpr, thresholds = roc_curve(
-            total_label_flat, total_pre_scores_flat, pos_label=1
-        )
-        auc_score = auc(fpr, tpr)
-
-        print(
-            "MHCH %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
-            % (
-                task,
-                total_loss / float(counter),
-                f1,
-                macro,
-                auc_score,
-                gtt_1,
-                gtt_2,
-                gtt_3,
-            )
-        )
-        self.logger.info(
-            "MHCH %s: Loss:%.3f\tF1Score:%.3f\tMacro_F1Score:%.3f\tAUC:%.3f\tGT-I:%.3f\tGT-II:%.3f\tGT-III:%.3f"
-            % (
-                task,
-                total_loss / float(counter),
-                f1,
-                macro,
-                auc_score,
-                gtt_1,
-                gtt_2,
-                gtt_3,
-            )
-        )
-
-        if task == "test":
-            self.logger.info(
-                "Handoff Test Metrics:\tF1Score\tMacro_F1Score\tAUC\tGT-I\tGT-II\tGT-III"
-            )
-            self.logger.info(
-                "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
-                % (task, f1, macro, auc_score, gtt_1, gtt_2, gtt_3)
-            )
-
-            self.logger.info(
-                "\n"
-                + classification_report(
-                    total_label_flat, total_pre_label_flat, digits=4
-                )
-            )
-            self.logger.info(
-                "\n" + str(confusion_matrix(total_label_flat, total_pre_label_flat))
-            )
-            tmp_lambda = 0.99
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.75
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.5
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.25
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = 0.0
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.25
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.5
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.75
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-            tmp_lambda = -0.99
-            gtt_1, gtt_2, gtt_3 = get_gtt_score(
-                total_label, total_pre_label, lamb=tmp_lambda
-            )
-            self.logger.info(
-                "Lambda={}\t{}\t{}\t{}".format(tmp_lambda, gtt_1, gtt_2, gtt_3)
-            )
-
-        return (
-            total_loss / float(counter),
-            acc,
-            f1,
-            macro,
-            auc_score,
-            gtt_1,
-            gtt_2,
-            gtt_3,
-        )
-
-    def train_ssa(
-        self,
-        data_generator,
-        keep_prob,
-        epochs,
-        data,
-        task="train",
-        batch_size=20,
-        nb_classes=2,
-        shuffle=True,
-        is_val=True,
-        is_test=True,
-        save_best=True,
-        val_task="eval",
-        test_task="test",
-    ):
-
-        print("Using SSA classification trainer.")
-        max_val = 0
-
-        for epoch in range(epochs):
-            self.logger.info(
-                "Training the models for epoch {} with batch size {}".format(
-                    epoch, batch_size
-                )
-            )
-            print("Training Epoch: {}".format(epoch))
-            counter, total_loss = 0.0, 0.0
-            total_label = []
-            total_pre_label = []
-
-            for (
-                batch_dialog_ids,
-                batch_sent_len,
-                batch_dia_len,
-                batch_ids,
-                batch_role_ids,
-                batch_handoff,
-                batch_senti,
-                batch_score,
-            ) in data_generator(
-                task=task,
-                batch_size=batch_size,
-                nb_classes=nb_classes,
-                shuffle=shuffle,
-                epoch=epoch,
-            ):
-
-                feed_dict = {
-                    self.input_x1: batch_dialog_ids,
-                    self.role_list: batch_role_ids,
-                    self.dia_len: batch_dia_len,
-                    self.sent_len: batch_sent_len,
-                    self.score_y: batch_score,
-                    self.dropout_keep_prob: keep_prob,
-                }
-                try:
-                    _, step, loss, output = self.sess.run(
-                        [self.train_op, self.global_step, self.loss, self.output],
-                        feed_dict,
-                    )
-                    true_y = np.argmax(batch_score, -1)
-
-                    total_label.append(true_y)
-                    total_pre_label.append(output)
-
-                    total_loss += loss
-                    counter += 1
-
-                except ValueError as e:
-                    self.logger.info("Wrong batch.{}".format(e))
-            label_list = np.concatenate(total_label)
-            pre_label_list = np.concatenate(total_pre_label)
-            acc = accuracy_score(label_list, pre_label_list)
-            macro_f1 = f1_score(label_list, pre_label_list, average="macro")
-            f1_0, f1_1, f1_2 = f1_score(
-                label_list, pre_label_list, labels=[0, 1, 2], average=None
-            )
-
-            print(confusion_matrix(label_list, pre_label_list))
-            print(
-                "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-                % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
-            )
-            self.logger.info(
-                "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-                % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
-            )
-
-            if is_val:
-
-                (
-                    eval_loss,
-                    eval_f1_2,
-                    eval_f1_1,
-                    eval_f1_0,
-                    eval_macro,
-                    eval_acc,
-                ) = self.evaluate_batch_ssa(
-                    data_generator,
-                    data,
-                    task=val_task,
-                    batch_size=batch_size,
-                    nb_classes=nb_classes,
-                    shuffle=False,
-                )
-
-                metrics_dict = {
-                    "loss": eval_loss,
-                    "acc": eval_acc,
-                    "macro": eval_macro,
-                    "f1_0": eval_f1_0,
-                    "f1_1": eval_f1_1,
-                    "f1_2": eval_f1_2,
-                }
-
-                if metrics_dict["macro"] > max_val and save_best:
-                    max_val = metrics_dict["macro"]
-                    self.save(self.save_dir, self.model_name + ".best")
-                    print("Saved!")
-
-        self.save(self.save_dir, self.model_name + ".last")
-        if is_test:
-            test_t = time.time()
-            self.restore(self.save_dir, self.model_name + ".best")
-            self.evaluate_batch_ssa(
-                data_generator,
-                data,
-                task=test_task,
-                batch_size=batch_size,
-                nb_classes=nb_classes,
-                shuffle=False,
-            )
-        self.summary_writer_train.close()
-        self.summary_writer_eval.close()
-
-    def evaluate_batch_ssa(
-        self,
-        data_generator,
-        data,
-        task="eval",
-        batch_size=32,
-        nb_classes=2,
-        shuffle=False,
-    ):
-        counter, total_loss = 0, 0.0
-        total_label = []
-        total_pre_label = []
-
-        for (
-            batch_dialog_ids,
-            batch_sent_len,
-            batch_dia_len,
-            batch_ids,
-            batch_role_ids,
-            batch_handoff,
-            batch_senti,
-            batch_score,
-        ) in data_generator(
-            task=task, batch_size=batch_size, nb_classes=nb_classes, shuffle=shuffle
-        ):
-
-            feed_dict = {
-                self.input_x1: batch_dialog_ids,
-                self.role_list: batch_role_ids,
-                self.dia_len: batch_dia_len,
-                self.sent_len: batch_sent_len,
-                self.score_y: batch_score,
-                self.dropout_keep_prob: 1.0,
-            }
-            try:
-                loss, output = self.sess.run([self.loss, self.output], feed_dict)
-                true_y = np.argmax(batch_score, -1)
-                total_label.append(true_y)
-                total_pre_label.append(output)
-
-                total_loss += loss
-                counter += 1
-
-            except ValueError as e:
-                self.logger.info("Wrong batch.{}".format(e))
-        label_list = np.concatenate(total_label)
-        pre_label_list = np.concatenate(total_pre_label)
-        acc = accuracy_score(label_list, pre_label_list)
-        macro_f1 = f1_score(label_list, pre_label_list, average="macro")
-        f1_0, f1_1, f1_2 = f1_score(
-            label_list, pre_label_list, labels=[0, 1, 2], average=None
-        )
-        print(confusion_matrix(label_list, pre_label_list))
-
-        print(
-            "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-            % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
-        )
-        self.logger.info(
-            "SSA Training Metrics %s: Loss:%.3f\tWS F1:%.3f\tF1:%.3f\tUS F1:%.3f\tMacro F1:%.3f\tAcc.:%.3f"
-            % (task, total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc)
-        )
-
-        if task == "test":
-            self.logger.info("Handoff Test Metrics:\tWS F1\tF1\tUS F1\tMacro F1\tAcc.")
-            self.logger.info(
-                "Metrics %s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f"
-                % (task, f1_2, f1_1, f1_0, macro_f1, acc)
-            )
-
-            self.logger.info(
-                "\n" + classification_report(label_list, pre_label_list, digits=4)
-            )
-            self.logger.info("\n" + str(confusion_matrix(label_list, pre_label_list)))
-
-        return total_loss / float(counter), f1_2, f1_1, f1_0, macro_f1, acc
 
 
 if __name__ == "__main__":

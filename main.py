@@ -14,7 +14,7 @@ import logging
 import argparse
 import random
 
-from CMHCH.tf_models.mtl.CMHCH import CMHCH
+from CEM.tf_models.mtl.CEM import CEM
 from data_loader import DataLoader
 from utility import *
 
@@ -48,53 +48,49 @@ def main():
     parser.add_argument(
         "--batch_size",
         default="64",
-        type=int, 
+        type=int,
         help="Batch size: The size of each batch of data.",
     )
-    parser.add_argument("--gpu", default=0, type=int, help="GPU: Which gpu you will use.")
+    parser.add_argument(
+        "--gpu", default=0, type=int, help="GPU: Which gpu you will use."
+    )
     parser.add_argument(
         "--log_path",
         default="./logs/",
-        type=str, 
+        type=str,
         help="path of the log file.",
     )
     parser.add_argument(
         "--model",
-        default="cmhch",
-        type=str, 
+        default="cem",
+        type=str,
         help="decide use what kind of model.",
     )
-    # parser.add_argument(
-    #     "--use_pretrain",
-    #     default=False,
-    #     type=bool, 
-    #     help="whether to use supervised method or position or deal.",
-    # )
     parser.add_argument(
-        "--info", default="ordinary", type=str, help="information about model training."
+        "--info", default="ordinary", type=str, help="information about task."
     )
     parser.add_argument(
         "--is_only_cf",
         default=False,
-        type=bool, 
+        type=bool,
         help="ablation study for counterfactual.",
     )
     parser.add_argument(
         "--is_only_ssa",
         default=False,
-        type=bool, 
+        type=bool,
         help="ablation study for satisfaction.",
     )
     parser.add_argument(
         "--weight_way",
         default="senti",
-        type=str, 
-        choices=['senti','score'],
+        type=str,
+        choices=["senti", "score"],
         help="the weight use to fine-tune based on user satisfaction.",
     )
     parser.add_argument(
         "--add_senti_loss",
-        default=True,
+        default=False,
         type=bool,
         help="whether add senti in loss function.",
     )
@@ -134,7 +130,6 @@ def main():
     logger.info("Running with args : {}".format(args))
 
     # get object named data_loader
-
     data_prepare = DataLoader(data=args.data)
 
     # Get config from file
@@ -175,8 +170,8 @@ def main():
         vocab = pkl.load(fp)
 
     # Get Network Framework
-    if args.model == "cmhch":
-        network = CMHCH(
+    if args.model == "cem":
+        network = CEM(
             memory=memory,
             vocab=vocab,
             config_dict=model_config,
@@ -184,12 +179,17 @@ def main():
             is_only_ssa=args.is_only_ssa,
             weight_way=args.weight_way,
             add_senti_loss=args.add_senti_loss,
-            batch_size=args.batch_size
+            batch_size=args.batch_size,
         )
     else:
         logger.info("We can't find {}: Please check model you want.".format(args.model))
         raise ValueError(
             "We can't find {}: Please check model you want.".format(args.model)
+        )
+
+    if args.task == "test" and args.model_path == None:
+        raise ValueError(
+            "Please input the model path you want to evaluate. "
         )
 
     # Set param for network
@@ -229,7 +229,7 @@ def main():
             model=args.model,
         )
     elif args.task == "test":
-        network.test_cmhch(
+        network.test_cem(
             data_generator,
             args.data,
             batch_size=batch_size,
@@ -272,39 +272,10 @@ def train(
     is_val=True,
     is_test=True,
     save_best=True,
-    model="cmhch",
-    cf_data_generator="",
+    model="cem",
 ):
-    if model == "mhch":
-        network.train_mhch(
-            data_generator=data_generator,
-            keep_prob=keep_prob,
-            epochs=epochs,
-            data=data,
-            task=task,
-            batch_size=batch_size,
-            nb_classes=nb_classes,
-            shuffle=shuffle,
-            is_val=is_val,
-            is_test=is_test,
-            save_best=save_best,
-        )
-    elif model == "ssa":
-        network.train_ssa(
-            data_generator=data_generator,
-            keep_prob=keep_prob,
-            epochs=epochs,
-            data=data,
-            task=task,
-            batch_size=batch_size,
-            nb_classes=nb_classes,
-            shuffle=shuffle,
-            is_val=is_val,
-            is_test=is_test,
-            save_best=save_best,
-        )
-    elif model == "cmhch":
-        network.train_cmhch(
+    if model == "cem":
+        network.train_cem(
             data_generator=data_generator,
             keep_prob=keep_prob,
             epochs=epochs,

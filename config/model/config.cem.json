@@ -1,5 +1,5 @@
 {
-    "model_name": "cmhch",
+    "model_name": "cem",
     "data_mode": "clothes",
 
     "classification_dim": 32,

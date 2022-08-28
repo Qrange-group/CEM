@@ -10,9 +10,9 @@ def read(data_name, mode):
     长度都是8000
     """
     if data_name == "clothes":
-        dataset_folder_name = "./MHCH_SSA" + "/clothes"
+        dataset_folder_name = "./data" + "/clothes"
     elif data_name == "makeup":
-        dataset_folder_name = "./MHCH_SSA" + "/makeup"
+        dataset_folder_name = "./data" + "/makeup"
 
     vocab_save_path = dataset_folder_name + "/vocab.pkl"
     train_path = dataset_folder_name + "/train.pkl"
@@ -55,9 +55,9 @@ def read(data_name, mode):
 def create_cf_data(data_name, mode):
 
     if data_name == "clothes":
-        dataset_folder_name = "./MHCH_SSA" + "/clothes"
+        dataset_folder_name = "./data" + "/clothes"
     elif data_name == "makeup":
-        dataset_folder_name = "./MHCH_SSA" + "/makeup"
+        dataset_folder_name = "./data" + "/makeup"
 
     vocab_save_path = dataset_folder_name + "/vocab.pkl"
     train_path = dataset_folder_name + "/train.pkl"
@@ -124,9 +124,9 @@ def create_cf_data(data_name, mode):
 def analysis(data_name="clothes", mode="train"):
 
     if data_name == "clothes":
-        dataset_folder_name = "./MHCH_SSA" + "/clothes"
+        dataset_folder_name = "./data" + "/clothes"
     elif data_name == "makeup":
-        dataset_folder_name = "./MHCH_SSA" + "/makeup"
+        dataset_folder_name = "./data" + "/makeup"
 
     vocab_save_path = dataset_folder_name + "/vocab.pkl"
     train_path = dataset_folder_name + "/train.pkl"

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-from cProfile import label
 import os
 import sys
 
@@ -20,14 +19,8 @@ from tf_models.layers.attention import *
 from tf_models.layers.transformer import *
 
 
-class CMHCH(Network):
-    def __init__(
-        self,
-        memory=0,
-        vocab=None,
-        config_dict=None,
-        **kwargs
-    ):
+class CEM(Network):
+    def __init__(self, memory=0, vocab=None, config_dict=None, **kwargs):
         Network.__init__(self, memory=memory, vocab=vocab)
         self.model_name = self.__class__.__name__
         self.logger.info("Model Name: {}".format(self.model_name))
@@ -138,14 +131,6 @@ class CMHCH(Network):
                 shape=[-1, self.dia_max_len, 5 * self.rnn_dim],
             )
 
-            # self.sent_encoder_attened_reshape = tf.reshape(self.utter_attened,
-            #                                                shape=[-1, self.dia_max_len, 2 * self.rnn_dim])
-            # self.sent_encoder_state_reshape = tf.reshape(self.utter_encode_state,
-            #                                              shape=[-1, self.dia_max_len, 2 * self.rnn_dim])
-            # # self.sent_encoder_attened_reshape.shape   (?, dia_max_len, 256)
-            # self.sent_encoder_attened_concat = tf.concat(
-            #     [self.sent_encoder_attened_reshape, self.sent_encoder_state_reshape], axis=-1)
-
             if self.dropout_keep_prob != 1:
                 # [B * T, 2 * H]
                 self.sent_encoder_attened_reshape = tf.nn.dropout(
@@ -208,7 +193,7 @@ class CMHCH(Network):
             self.ssa2mhch_matrix = tf.matmul(
                 self.mhch_enc_dense, tf.transpose(self.ssa_enc_dense, perm=[0, 2, 1])
             )
-            paddings = tf.ones_like(self.ssa2mhch_matrix) * (-(2 ** 32) + 1)
+            paddings = tf.ones_like(self.ssa2mhch_matrix) * (-(2**32) + 1)
             self.ssa2mhch_matrix_dia_masked = tf.where(
                 tf.equal(self.dia_att_mask, 0), paddings, self.ssa2mhch_matrix
             )
@@ -247,7 +232,7 @@ class CMHCH(Network):
                 self.dial_position_weights, -1
             )
 
-            paddings = tf.ones_like(self.mhch2ssa_matrix) * (-(2 ** 32) + 1)
+            paddings = tf.ones_like(self.mhch2ssa_matrix) * (-(2**32) + 1)
             self.mhch2ssa_matrix_dia_masked = tf.where(
                 tf.equal(self.dia_att_mask, 0), paddings, self.mhch2ssa_matrix
             )
@@ -275,7 +260,6 @@ class CMHCH(Network):
                     num_heads=self.num_heads,
                     dropout_rate=1 - self.dropout_keep_prob,
                 )
-                # self.ssa_context_customer = self.mhch2ssa_final_vec
 
                 # [B, T, Dense_dim]
                 self.ssa_ff_customer = self.ff(
@@ -298,7 +282,6 @@ class CMHCH(Network):
                     sequence_length=self.dia_len,
                     dtype=tf.float32,
                 )
-                # self.mhch_context_ff = tf.matmul(, self.mhch_context_ff_rnn)
                 # self.ssa2mhch_final_vec (?, dia_max_len, 256)
                 # self.mhch_context_ff    (?, dia_max_len, 128)
 
@@ -311,7 +294,7 @@ class CMHCH(Network):
             v_ssa = tf.tanh(tf.matmul(self.ssa_ff_customer, w_ssa) + b_ssa)
             # [B, T]
             self.vu_ssa = tf.tensordot(v_ssa, u_ssa, axes=1, name="vu")
-            paddings = tf.ones_like(self.vu_ssa) * (-(2 ** 32) + 1)
+            paddings = tf.ones_like(self.vu_ssa) * (-(2**32) + 1)
             # sequence mask
             self.vu_ssa_masked = tf.where(
                 tf.equal(self.dia_seq_mask, 0), paddings, self.vu_ssa
@@ -336,7 +319,7 @@ class CMHCH(Network):
             # self.score_logits.shape (?, 3)
             if not self.is_only_cf:
                 # self.main_logits.shape (?, 50, 2)
-                if self.weigth_way == 'score':
+                if self.weigth_way == "score":
                     self.main_logits = self.main_logits * tf.expand_dims(
                         tf.concat(
                             [
@@ -349,12 +332,12 @@ class CMHCH(Network):
                     )
                 else:
                     self.main_logits = self.main_logits * tf.concat(
-                            [
-                                tf.expand_dims(self.senti_logits[:, :, 0], axis=-1),
-                                tf.expand_dims(self.senti_logits[:, :, 2], axis=-1),
-                            ],
-                            -1,
-                        )
+                        [
+                            tf.expand_dims(self.senti_logits[:, :, 0], axis=-1),
+                            tf.expand_dims(self.senti_logits[:, :, 2], axis=-1),
+                        ],
+                        -1,
+                    )
 
             # [B, T]
             self.output = tf.argmax(self.main_logits, axis=-1)
@@ -403,12 +386,12 @@ class CMHCH(Network):
             self.dia_len, tf.float32
         )
         self.main_loss = tf.reduce_mean(self.scale_cross_entropy)
-        
+
         if self.add_senti_loss:
             self.senti_loss = tf.reduce_mean(
                 -tf.reduce_sum(self.senti_y * tf.math.log(self.senti_logits + 1e-9), -1)
             )
-        else: 
+        else:
             self.senti_loss = 0
 
         if self.is_only_ssa:

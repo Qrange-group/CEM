@@ -84,7 +84,7 @@ def scaled_dot_product_attention(
         outputs = tf.matmul(Q, tf.transpose(K, [0, 2, 1]))  # (N, T_q, T_k)
 
         # scale
-        outputs /= d_k ** 0.5
+        outputs /= d_k**0.5
 
         # key masking
         outputs = mask(outputs, key_masks=key_masks, type="key")
@@ -133,7 +133,7 @@ def mask(inputs, key_masks=None, type=None):
        [[ 0.0000000e+00, -4.2949673e+09, -4.2949673e+09],
         [ 0.0000000e+00, -4.2949673e+09, -4.2949673e+09]]], dtype=float32)
     """
-    padding_num = -(2 ** 32) + 1
+    padding_num = -(2**32) + 1
     if type in ("k", "key", "keys"):
         key_masks = tf.to_float(key_masks)
         key_masks = tf.tile(
@@ -334,6 +334,6 @@ def noam_scheme(init_lr, global_step, warmup_steps=4000.0):
     step = tf.cast(global_step + 1, dtype=tf.float32)
     return (
         init_lr
-        * warmup_steps ** 0.5
-        * tf.minimum(step * warmup_steps ** -1.5, step ** -0.5)
+        * warmup_steps**0.5
+        * tf.minimum(step * warmup_steps**-1.5, step**-0.5)
     )
