@@ -10,7 +10,7 @@ This repository is the implementation of "CEM: Machine-Human Chatting Handoff vi
 CEM solves the problem of Machine-Human Chatting Handoff, establishing the causal graph of MHCH based on these two variables, which is a simple yet effective module and can be easy to plug into the existing MHCH methods. 
 
 <p align="center">
-  <img src="https://github.com/Qrange-group/CEM/blob/master/images/dialog.png" width="300" height="600">
+  <img src="https://github.com/Qrange-group/CEM/blob/master/images/dialog.png" width="300" height="500">
 </p>
 
 ## Requirement
