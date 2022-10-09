@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import os
 import sys
 
@@ -87,9 +86,6 @@ class CEM(Network):
             self.embedded, shape=[-1, self.sent_max_len, self.embedding_dim]
         )
         self.sent_len_reshape = tf.reshape(self.sent_len, shape=[-1])
-        # self.embedded.shape           # (?, 50, 64, 200)
-        # self.embedded_reshaped.shape  # (?, 64, 200)
-        # self.sent_len_reshape.shape   # (?,)
 
         with tf.name_scope("utterance_encoder"):
             self.utter_encode_output, self.utter_encode_state = self._bidirectional_rnn(
@@ -106,14 +102,9 @@ class CEM(Network):
             self.utter_attened = tf.reduce_sum(
                 self.utter_encode_output * tf.expand_dims(self.alphas, -1), 1
             )
-            # self.utter_encode_output.shape            (?, sent_len, 256)
-            # (self.utter_encode_output * tf.expand_dims(self.alphas, -1)).shape (?, sent_len, 256)
-            # self.utter_attened.shape                  (?, 256)
             self.sent_encoder_attened_concat = tf.concat(
                 [self.utter_attened, self.utter_encode_state], axis=-1
             )
-            # self.sent_encoder_attened_intersection = tf.layers.dense(self.sent_encoder_attened_concat, 4 * self.rnn_dim, activation=tf.nn.tanh, use_bias=True)
-            # self.sent_encoder_attened_reshape = tf.reshape(self.sent_encoder_attened_intersection, shape=[-1, self.dia_max_len, 4 * self.rnn_dim])
             self.sent_encoder_attened_intersection = tf.layers.dense(
                 self.sent_encoder_attened_concat,
                 self.rnn_dim,
@@ -211,7 +202,6 @@ class CEM(Network):
             self.ssa2mhch_final_vec = tf.keras.layers.Dense(
                 units=self.dense_dim, activation="relu"
             )(self.ssa2mhch_concat)
-            # self.ssa2mhch_final_vec.shape (?, dia_max_len, 256)
 
         with tf.name_scope("mhch2ssa_context"):
             self.mhch2ssa_matrix = tf.matmul(
@@ -249,8 +239,6 @@ class CEM(Network):
         with tf.name_scope("ssa_context"):
             with tf.variable_scope("ssa_context_encoding"):
                 # tranformer_encoder
-                # self.ssa_context_customer.shape (?, 50, 256)
-                # self.mhch2ssa_final_vec.shape (?, 50, 256)
                 self.ssa_context_customer = self.multihead_attention(
                     queries=self.mhch2ssa_final_vec,
                     keys=self.mhch2ssa_final_vec,
@@ -282,8 +270,6 @@ class CEM(Network):
                     sequence_length=self.dia_len,
                     dtype=tf.float32,
                 )
-                # self.ssa2mhch_final_vec (?, dia_max_len, 256)
-                # self.mhch_context_ff    (?, dia_max_len, 128)
 
         with tf.name_scope("ssa_dis_combination"):
             # Trainable parameters
@@ -315,29 +301,17 @@ class CEM(Network):
             )
             self.senti_logits = self.ssa_ff_customer_distri
             self.score_logits = self.ssa_combine_vec
-            # self.senti_logits.shape (?, 50, 3)
-            # self.score_logits.shape (?, 3)
             if not self.is_only_cf:
-                # self.main_logits.shape (?, 50, 2)
-                if self.weigth_way == "score":
-                    self.main_logits = self.main_logits * tf.expand_dims(
-                        tf.concat(
-                            [
-                                tf.expand_dims(self.score_logits[:, 0], axis=-1),
-                                tf.expand_dims(self.score_logits[:, 2], axis=-1),
-                            ],
-                            -1,
-                        ),
-                        1,
-                    )
-                else:
-                    self.main_logits = self.main_logits * tf.concat(
+                self.main_logits = self.main_logits * tf.expand_dims(
+                    tf.concat(
                         [
-                            tf.expand_dims(self.senti_logits[:, :, 0], axis=-1),
-                            tf.expand_dims(self.senti_logits[:, :, 2], axis=-1),
+                            tf.expand_dims(self.score_logits[:, 0], axis=-1),
+                            tf.expand_dims(self.score_logits[:, 2], axis=-1),
                         ],
                         -1,
-                    )
+                    ),
+                    1,
+                )
 
             # [B, T]
             self.output = tf.argmax(self.main_logits, axis=-1)

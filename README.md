@@ -2,12 +2,12 @@
 ![GitHub](https://img.shields.io/github/license/gbup-group/DIANet.svg)
 ![GitHub](https://img.shields.io/badge/Qrange%20-group-orange)
 
-This repository is the implementation of "CEM: Machine-Human Chatting Handoff via Causal-Enhance Module" [[paper]](https://arxiv.org/abs/?) on Clothe and Makeup2 datasets. Our paper has been accepted for presentation at ???. You can also check with the [??? proceeding version](???).
+This repository is the implementation of "CEM: Machine-Human Chatting Handoff via Causal-Enhance Module" [[paper]](https://arxiv.org/abs/2210.02862) on Clothe and Makeup2 datasets. Our paper has been accepted for presentation at EMNLP 2022. 
 
 
 ## Introduction
 
-CEM solves the problem of Machine-Human Chatting Handoff, establishing the causal graph of MHCH based on these two variables, which is a simple yet effective module and can be easy to plug into the existing MHCH methods. 
+CEM solves the problem of Machine-Human Chatting Handoff, establishing the causal graph of MHCH, which is a simple-yet-effective module and can be easy to plug into the existing MHCH methods. 
 
 <p align="center">
   <img src="https://github.com/Qrange-group/CEM/blob/master/images/dialog.png" width="300" height="500">
@@ -37,12 +37,6 @@ python -u -W ignore main.py --task train --model cem --data makeup2
 
 ```bash
 python -u -W ignore main.py --task test --model cem --data makeup2 --model_path pretrained_model_dir
-```
-
-## Citation
-
-```
-???
 ```
 
 ## Acknowledgments
