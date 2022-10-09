@@ -82,13 +82,6 @@ def main():
         help="ablation study for satisfaction.",
     )
     parser.add_argument(
-        "--weight_way",
-        default="senti",
-        type=str,
-        choices=["senti", "score"],
-        help="the weight use to fine-tune based on user satisfaction.",
-    )
-    parser.add_argument(
         "--add_senti_loss",
         default=False,
         type=bool,
@@ -177,7 +170,6 @@ def main():
             config_dict=model_config,
             is_only_cf=args.is_only_cf,
             is_only_ssa=args.is_only_ssa,
-            weight_way=args.weight_way,
             add_senti_loss=args.add_senti_loss,
             batch_size=args.batch_size,
         )

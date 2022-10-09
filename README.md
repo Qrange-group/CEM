@@ -2,7 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/gbup-group/DIANet.svg)
 ![GitHub](https://img.shields.io/badge/Qrange%20-group-orange)
 
-This repository is the implementation of "CEM: Machine-Human Chatting Handoff via Causal-Enhance Module" [[paper]](https://arxiv.org/abs/2210.02862) on Clothe and Makeup2 datasets. Our paper has been accepted for presentation at EMNLP 2022. 
+This repository is the implementation of "CEM: Machine-Human Chatting Handoff via Causal-Enhance Module" [[paper]](https://arxiv.org/abs/2210.02862) on Clothes and Makeup2 datasets. Our paper has been accepted for presentation at EMNLP 2022. 
 
 
 ## Introduction

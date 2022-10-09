@@ -302,16 +302,14 @@ class CEM(Network):
             self.senti_logits = self.ssa_ff_customer_distri
             self.score_logits = self.ssa_combine_vec
             if not self.is_only_cf:
-                self.main_logits = self.main_logits * tf.expand_dims(
-                    tf.concat(
-                        [
-                            tf.expand_dims(self.score_logits[:, 0], axis=-1),
-                            tf.expand_dims(self.score_logits[:, 2], axis=-1),
-                        ],
-                        -1,
-                    ),
-                    1,
+                self.us = tf.expand_dims(self.weights_local, axis=-1) * tf.concat(
+                    [
+                        tf.expand_dims(self.senti_logits[:, :, 0], axis=-1),
+                        tf.expand_dims(self.senti_logits[:, :, 2], axis=-1),
+                    ],
+                    -1,
                 )
+                self.main_logits = self.main_logits * self.us
 
             # [B, T]
             self.output = tf.argmax(self.main_logits, axis=-1)

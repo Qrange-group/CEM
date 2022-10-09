@@ -60,14 +60,12 @@ class Network(object):
         batch_size=128,
         is_only_ssa=False,
         is_only_cf=False,
-        weigth_way="score",
         add_senti_loss=False,
         **kwargs
     ):
         # ablation study
         self.is_only_ssa = is_only_ssa
         self.is_only_cf = is_only_cf
-        self.weigth_way = weigth_way
         self.add_senti_loss = add_senti_loss
 
         # logging
